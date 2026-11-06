@@ -17,7 +17,8 @@ import {
   ClipboardCheck,
   CheckCircle2,
   AlertTriangle,
-  Sparkles
+  Sparkles,
+  Layers
 } from 'lucide-react';
 
 export default function Dashboard({ plan, userProfile, onPlanUpdated, onOpenExports }) {
@@ -55,6 +56,15 @@ export default function Dashboard({ plan, userProfile, onPlanUpdated, onOpenExpo
               <Target className="w-3.5 h-3.5 text-emerald-600" />
               Objectif : {plan.targetTime}
             </span>
+            {plan.raceDate && (
+              <>
+                <span>·</span>
+                <span className="font-mono text-sky-800 font-semibold flex items-center gap-1">
+                  <Calendar className="w-3 h-3 text-sky-600" />
+                  Course : {new Date(plan.raceDate).toLocaleDateString('fr-FR')}
+                </span>
+              </>
+            )}
             {plan.targetPaceData && (
               <>
                 <span>·</span>
@@ -65,11 +75,19 @@ export default function Dashboard({ plan, userProfile, onPlanUpdated, onOpenExpo
             )}
             <span>·</span>
             <span>{plan.daysPerWeek} séances/sem</span>
-            <span>·</span>
-            <span className="font-mono text-slate-500">
-              Vélo : {plan.hasPowerMeter ? 'Capteur Watts' : 'Ressenti RPE & FC'}
-            </span>
           </div>
+
+          {plan.baseBuildingWeeksCount > 0 && (
+            <div className="mt-2 text-[11px] font-mono text-slate-500 flex items-center gap-2">
+              <span className="px-1.5 py-0.5 rounded bg-sky-50 text-sky-800 border border-sky-200 font-semibold">
+                {plan.baseBuildingWeeksCount} sem de Prise de Volume
+              </span>
+              <span>puis</span>
+              <span className="px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200 font-semibold">
+                {plan.standardSpecificWeeks} sem de Prépa Spécifique
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Aggregate KPI counters */}
@@ -98,7 +116,7 @@ export default function Dashboard({ plan, userProfile, onPlanUpdated, onOpenExpo
         </div>
       </div>
 
-      {/* Week Navigation Controls & Adaptive Coach Action */}
+      {/* Week Navigation Controls */}
       <div className="bg-white border border-slate-200 rounded-lg p-3.5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="inline-flex rounded-md shadow-2xs border border-slate-200 overflow-hidden">
@@ -128,6 +146,11 @@ export default function Dashboard({ plan, userProfile, onPlanUpdated, onOpenExpo
             <span className="text-xs text-slate-600 font-medium">
               {currentWeek.phase}
             </span>
+            {currentWeek.phaseCategory === 'base_building' && (
+              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-sky-50 text-sky-800 border border-sky-200 font-semibold">
+                Prise de Volume
+              </span>
+            )}
             {currentWeek.isBaselineWeek && (
               <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-purple-50 text-purple-800 border border-purple-200 font-semibold flex items-center gap-1">
                 <Compass className="w-3 h-3" />
@@ -150,7 +173,7 @@ export default function Dashboard({ plan, userProfile, onPlanUpdated, onOpenExpo
               className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-md text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
             >
               <ClipboardCheck className="w-3.5 h-3.5" />
-              <span>Bilan Coach Fin de S{currentWeek.weekNumber}</span>
+              <span>Bilan Fin de S{currentWeek.weekNumber}</span>
             </button>
           )}
 
@@ -210,7 +233,11 @@ export default function Dashboard({ plan, userProfile, onPlanUpdated, onOpenExpo
             <BarChart3 className="w-4 h-4 text-slate-500" />
             <span>Périodisation du cycle complet ({plan.totalWeeks} semaines)</span>
           </div>
-          <span className="text-[11px] text-slate-500 font-mono">Bilan de fin de semaine disponible à chaque microcycle</span>
+          <span className="text-[11px] text-slate-500 font-mono">
+            {plan.baseBuildingWeeksCount > 0 
+              ? `${plan.baseBuildingWeeksCount} sem Volume + ${plan.standardSpecificWeeks} sem Spécifique`
+              : 'Périodisation spécifique'}
+          </span>
         </div>
 
         <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-12 lg:grid-cols-16 gap-1.5">
@@ -225,8 +252,10 @@ export default function Dashboard({ plan, userProfile, onPlanUpdated, onOpenExpo
                     ? 'border-slate-900 bg-slate-900 text-white shadow-2xs font-bold'
                     : w.isBaselineWeek
                     ? 'border-purple-300 bg-purple-50 text-purple-900 hover:border-purple-400 font-semibold'
-                    : w.adaptation
-                    ? 'border-sky-300 bg-sky-50 text-sky-900'
+                    : w.phaseCategory === 'base_building'
+                    ? 'border-sky-300 bg-sky-50 text-sky-800 hover:border-sky-400'
+                    : w.phaseCategory === 'taper'
+                    ? 'border-amber-300 bg-amber-50 text-amber-800'
                     : w.isRecoveryWeek
                     ? 'border-emerald-200 bg-emerald-50 text-emerald-800 hover:border-emerald-300'
                     : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300 hover:bg-slate-100'

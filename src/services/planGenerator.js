@@ -1,11 +1,18 @@
 import database from '../data/trainingDatabase.json';
 
 /**
- * PulsePlan Coach Engine
- * 1. Target Time parsing & calculation of race pace required
- * 2. Athletic Baseline Calibration Week (Week 1 includes standardized test workouts)
- * 3. Cycling: Power (Watts) if power meter available, otherwise RPE / Heart Rate / Cadence Test
- * 4. Garmin-style Physiological Impact (Aerobic TE, Anaerobic TE, Primary Benefit, Muscle Adaptation, Fuel)
+ * PulsePlan Coach Engine with Target Race Date (Date de Course Cible)
+ * 1. Target Race Date Calculation:
+ *    - totalAvailableWeeks = weeks between today (next Monday) and raceDate
+ *    - specificWeeksRequired = standard prep duration for distance (e.g. 12 weeks for Semi, 16 for Marathon)
+ *    - if totalAvailableWeeks > specificWeeksRequired:
+ *        phase 1: Fondations & Prise de Volume Aérobie (Building Base)
+ *        phase 2: Étalonnage Semaine 1
+ *        phase 3: Préparation Spécifique Allure Course
+ *        phase 4: Affûtage pré-compétition
+ * 2. Athletic Baseline Calibration Week
+ * 3. Cycling with/without power meter
+ * 4. Garmin physiological impact metrics
  */
 
 export const DAYS_OF_WEEK = [
@@ -82,9 +89,18 @@ export function calculateRequiredPace(distanceKey, targetTimeStr) {
   };
 }
 
-/**
- * Standardized Benchmark Test Workouts for Week 1 (Athletic Baseline Calibration)
- */
+export function calculateWeeksUntilDate(raceDateStr) {
+  if (!raceDateStr) return null;
+  const raceDate = new Date(raceDateStr);
+  if (isNaN(raceDate.getTime())) return null;
+
+  const now = new Date();
+  const diffTime = raceDate.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  const weeks = Math.max(4, Math.round(diffDays / 7));
+  return weeks;
+}
+
 const BASELINE_TEST_WORKOUTS = {
   running: {
     id: 'test_demi_cooper',
@@ -194,11 +210,29 @@ export function generateTrainingPlan({
   distanceKey = 'marathon',
   daysPerWeek = 4,
   targetTime = null,
+  raceDate = null,
   userProfile = {}
 }) {
   const disciplineInfo = database.disciplines[disciplineKey];
   const distanceInfo = disciplineInfo?.distances[distanceKey] || { weeks: 12, defaultTSSPerWeek: 350, label: 'Course' };
-  const totalWeeks = distanceInfo.weeks || 12;
+  
+  // Specific prep duration required for distance (e.g. 12 weeks for semi, 16 for marathon)
+  const standardSpecificWeeks = distanceInfo.weeks || 12;
+
+  // Calculate total available weeks if raceDate provided
+  let totalWeeks = standardSpecificWeeks;
+  let baseBuildingWeeksCount = 0;
+
+  if (raceDate) {
+    const calculatedWeeks = calculateWeeksUntilDate(raceDate);
+    if (calculatedWeeks && calculatedWeeks >= 4) {
+      totalWeeks = calculatedWeeks;
+      if (totalWeeks > standardSpecificWeeks) {
+        // Extra weeks before specific prep are dedicated to Aerobic Base Building (Prise de Volume)
+        baseBuildingWeeksCount = totalWeeks - standardSpecificWeeks;
+      }
+    }
+  }
 
   const effectiveTargetTime = targetTime || DEFAULT_TARGET_TIMES[distanceKey] || '03:30:00';
   const targetPaceData = calculateRequiredPace(distanceKey, effectiveTargetTime);
@@ -213,25 +247,46 @@ export function generateTrainingPlan({
     const isBaselineWeek = (w === 1);
     const isRecoveryWeek = (w % 4 === 0) && w !== totalWeeks && !isBaselineWeek;
 
+    // Periodization based on Race Date
     let phase = 'Développement Foncier';
+    let phaseCategory = 'base'; // 'base_building', 'baseline_test', 'specific_prep', 'taper'
     let volumeMultiplier = 1.0;
 
     if (isBaselineWeek) {
       phase = 'Étalonnage & Tests des Bases Athlétiques';
+      phaseCategory = 'baseline_test';
       volumeMultiplier = 0.85;
-    } else if (w <= Math.round(totalWeeks * 0.45)) {
-      phase = 'Fondation & Endurance de Base';
-      volumeMultiplier = 0.9 + (w * 0.03);
-    } else if (w <= Math.round(totalWeeks * 0.8)) {
-      phase = `Spécifique Allure Cible (${targetPaceData ? targetPaceData.formattedPace : 'Allure Course'})`;
-      volumeMultiplier = 1.05 + ((w - Math.round(totalWeeks * 0.45)) * 0.02);
+    } else if (baseBuildingWeeksCount > 0 && w <= baseBuildingWeeksCount) {
+      // PHASE 1: Prise de Volume & Foncier Aérobie
+      phase = `Prise de Volume & Foncier Aérobie (S${w}/${baseBuildingWeeksCount})`;
+      phaseCategory = 'base_building';
+      volumeMultiplier = 0.90 + ((w - 1) * 0.04);
     } else {
-      phase = 'Affûtage & Fraîcheur Pré-Course';
-      volumeMultiplier = 0.75 - ((w - Math.round(totalWeeks * 0.8)) * 0.08);
+      // PHASE 2 & 3: Préparation Spécifique & Affûtage
+      const specificWeekIndex = w - baseBuildingWeeksCount;
+      const weeksUntilRace = totalWeeks - w + 1;
+
+      if (weeksUntilRace <= 2) {
+        phase = 'Affûtage Final & Fraîcheur Pré-Course';
+        phaseCategory = 'taper';
+        volumeMultiplier = 0.65;
+      } else if (weeksUntilRace <= 3) {
+        phase = 'Début d\'Affûtage & Surcompensation';
+        phaseCategory = 'taper';
+        volumeMultiplier = 0.80;
+      } else if (specificWeekIndex <= Math.round(standardSpecificWeeks * 0.45)) {
+        phase = 'Spécifique : Fondation & Économie de Course';
+        phaseCategory = 'specific_prep';
+        volumeMultiplier = 0.95 + (specificWeekIndex * 0.02);
+      } else {
+        phase = `Spécifique Allure Cible (${targetPaceData ? targetPaceData.formattedPace : 'Allure Course'})`;
+        phaseCategory = 'specific_prep';
+        volumeMultiplier = 1.05 + ((specificWeekIndex - Math.round(standardSpecificWeeks * 0.45)) * 0.02);
+      }
     }
 
     if (isRecoveryWeek) {
-      phase = 'Assimilation & Régénération';
+      phase += ' · Assimilation';
       volumeMultiplier *= 0.75;
     }
 
@@ -252,6 +307,7 @@ export function generateTrainingPlan({
         targetSlots,
         library,
         phase,
+        phaseCategory,
         volumeMultiplier,
         userProfile,
         isBaselineWeek,
@@ -275,6 +331,7 @@ export function generateTrainingPlan({
     weeks.push({
       weekNumber: w,
       phase,
+      phaseCategory,
       isBaselineWeek,
       isRecoveryWeek,
       volumeMultiplier: Number(volumeMultiplier.toFixed(2)),
@@ -292,6 +349,9 @@ export function generateTrainingPlan({
     distanceLabel: distanceInfo.label,
     daysPerWeek,
     totalWeeks,
+    raceDate: raceDate || null,
+    baseBuildingWeeksCount,
+    standardSpecificWeeks,
     targetTime: effectiveTargetTime,
     targetPaceData,
     hasPowerMeter: hasPower,
@@ -306,6 +366,7 @@ function pickWorkoutForSlot({
   targetSlots,
   library,
   phase,
+  phaseCategory,
   volumeMultiplier,
   userProfile,
   isBaselineWeek,
@@ -328,6 +389,35 @@ function pickWorkoutForSlot({
       template = library.running.find(w => w.category === 'endurance');
     } else {
       template = library.running.find(w => w.category === 'recovery') || library.running[0];
+    }
+  }
+
+  // Phase 1: Base Building prioritizes aerobic capacity, long slow distance and recovery
+  if (!template && phaseCategory === 'base_building') {
+    const isWeekendLongSlot = (dayIndex === 5 || dayIndex === 6);
+    if (disciplineKey === 'running') {
+      if (isWeekendLongSlot) {
+        template = library.running.find(w => w.category === 'long') || library.running[0];
+      } else if (dayIndex === targetSlots[0]) {
+        // Light fartlek / tempo instead of hard VO2Max
+        template = library.running.find(w => w.category === 'tempo') || library.running[0];
+      } else {
+        template = library.running.find(w => w.category === 'endurance');
+      }
+    } else if (disciplineKey === 'triathlon') {
+      if (dayIndex === 5) {
+        template = library.cycling.find(w => w.category === 'long') || library.cycling[0];
+      } else if (dayIndex === 6) {
+        template = library.running.find(w => w.category === 'long') || library.running[0];
+      } else {
+        template = library.swimming[0] || library.cycling[0];
+      }
+    } else if (disciplineKey === 'trail') {
+      if (isWeekendLongSlot) {
+        template = library.trail.find(w => w.category === 'long') || library.trail[0];
+      } else {
+        template = library.running.find(w => w.category === 'endurance');
+      }
     }
   }
 
@@ -380,7 +470,8 @@ function pickWorkoutForSlot({
     workout: template,
     profile: userProfile,
     targetPaceData,
-    hasPower
+    hasPower,
+    phaseCategory
   });
 
   return {
@@ -407,9 +498,15 @@ function getIntensityFactor(category) {
   }
 }
 
-function computeCoachGuidance({ workout, profile, targetPaceData, hasPower }) {
+function computeCoachGuidance({ workout, profile, targetPaceData, hasPower, phaseCategory }) {
   if (workout.category === 'test') {
     return workout.personalizedPace;
+  }
+
+  if (phaseCategory === 'base_building') {
+    if (workout.sport === 'running' && workout.category === 'long') {
+      return 'Foncier de base : Allure Z2 stable, construction du réservoir aérobie avant le bloc spécifique';
+    }
   }
 
   if (workout.sport === 'running') {
