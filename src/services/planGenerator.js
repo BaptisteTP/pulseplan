@@ -301,8 +301,9 @@ export function generateTrainingPlan({
     }
 
     if (isRecoveryWeek) {
-      phase += ' · Assimilation';
+      phase += ' · Décharge & Assimilation';
       volumeMultiplier *= 0.75;
+      phaseCategory = 'recovery';
     }
 
     const days = DAYS_OF_WEEK.map((dayName, dayIndex) => {

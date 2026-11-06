@@ -134,6 +134,47 @@ export default function Dashboard({ plan, userProfile, onPlanUpdated, onOpenExpo
 
   const heroStyle = getDisciplineHero(plan.disciplineKey);
 
+  // Phase color badge helper for current week
+  const getPhaseBadgeForWeek = (week) => {
+    if (!week) return null;
+    if (week.phaseCategory === 'taper') {
+      return {
+        label: 'Affûtage',
+        badge: 'bg-amber-100 text-amber-800 border-amber-300'
+      };
+    }
+    if (week.isRecoveryWeek || week.phaseCategory === 'recovery') {
+      return {
+        label: 'Décharge',
+        badge: 'bg-emerald-100 text-emerald-800 border-emerald-300'
+      };
+    }
+    if (week.phaseCategory === 'specific_prep') {
+      return {
+        label: 'Intensité',
+        badge: 'bg-rose-100 text-rose-800 border-rose-300'
+      };
+    }
+    if (week.phaseCategory === 'base_building') {
+      return {
+        label: 'Volume',
+        badge: 'bg-sky-100 text-sky-800 border-sky-300'
+      };
+    }
+    if (week.isBaselineWeek || week.phaseCategory === 'baseline_test') {
+      return {
+        label: 'Test Étalonnage',
+        badge: 'bg-purple-100 text-purple-800 border-purple-300'
+      };
+    }
+    return {
+      label: 'Foncier',
+      badge: 'bg-slate-100 text-slate-700 border-slate-200'
+    };
+  };
+
+  const currentPhaseBadge = getPhaseBadgeForWeek(currentWeek);
+
   return (
     <div className="space-y-3 sm:space-y-4">
       {/* Top Hero Banner with High Quality Action Photo */}
@@ -238,8 +279,15 @@ export default function Dashboard({ plan, userProfile, onPlanUpdated, onOpenExpo
           </div>
 
           <div className="text-right sm:text-left">
-            <div className="font-bold text-sm text-slate-900 leading-tight">
-              Semaine {currentWeek.weekNumber} / {plan.totalWeeks}
+            <div className="flex items-center gap-1.5">
+              <span className="font-bold text-sm text-slate-900 leading-tight">
+                Semaine {currentWeek.weekNumber} / {plan.totalWeeks}
+              </span>
+              {currentPhaseBadge && (
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border shadow-2xs ${currentPhaseBadge.badge}`}>
+                  {currentPhaseBadge.label}
+                </span>
+              )}
             </div>
             <div className="text-[11px] text-slate-500 font-medium truncate max-w-[200px]">
               {currentWeek.phase}

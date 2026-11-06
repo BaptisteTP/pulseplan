@@ -69,7 +69,9 @@ export default function MonthCalendar({ plan, userProfile, onPlanUpdated, onOpen
           weekNumber: week.weekNumber,
           weekIndex: week.weekNumber - 1,
           phase: week.phase,
+          phaseCategory: week.phaseCategory,
           isRecoveryWeek: week.isRecoveryWeek,
+          isBaselineWeek: week.isBaselineWeek,
           dayItem
         };
       });
@@ -184,6 +186,63 @@ export default function MonthCalendar({ plan, userProfile, onPlanUpdated, onOpen
           dot: 'bg-orange-500'
         };
     }
+  };
+
+  // Phase Periodization Color Badges for Weeks
+  const getPhaseColorBadge = (entry) => {
+    if (!entry) return { label: 'Base', badge: 'bg-slate-100 text-slate-600 border-slate-200' };
+
+    if (entry.phaseCategory === 'taper') {
+      return {
+        label: 'Affûtage',
+        shortLabel: 'Affût.',
+        badge: 'bg-amber-100 text-amber-800 border-amber-300 font-bold',
+        cellGlow: 'border-l-2 border-l-amber-400'
+      };
+    }
+
+    if (entry.isRecoveryWeek || entry.phaseCategory === 'recovery') {
+      return {
+        label: 'Décharge',
+        shortLabel: 'Déch.',
+        badge: 'bg-emerald-100 text-emerald-800 border-emerald-300 font-bold',
+        cellGlow: 'border-l-2 border-l-emerald-400'
+      };
+    }
+
+    if (entry.phaseCategory === 'specific_prep') {
+      return {
+        label: 'Intensité',
+        shortLabel: 'Intens.',
+        badge: 'bg-rose-100 text-rose-800 border-rose-300 font-bold',
+        cellGlow: 'border-l-2 border-l-rose-400'
+      };
+    }
+
+    if (entry.phaseCategory === 'base_building') {
+      return {
+        label: 'Volume',
+        shortLabel: 'Vol.',
+        badge: 'bg-sky-100 text-sky-800 border-sky-300 font-bold',
+        cellGlow: 'border-l-2 border-l-sky-400'
+      };
+    }
+
+    if (entry.isBaselineWeek || entry.phaseCategory === 'baseline_test') {
+      return {
+        label: 'Test',
+        shortLabel: 'Test',
+        badge: 'bg-purple-100 text-purple-800 border-purple-300 font-bold',
+        cellGlow: 'border-l-2 border-l-purple-400'
+      };
+    }
+
+    return {
+      label: 'Foncier',
+      shortLabel: 'Fonc.',
+      badge: 'bg-slate-100 text-slate-700 border-slate-200',
+      cellGlow: 'border-l-2 border-l-slate-300'
+    };
   };
 
   let monthWorkoutsCount = 0;
@@ -408,6 +467,28 @@ export default function MonthCalendar({ plan, userProfile, onPlanUpdated, onOpen
         </div>
       </div>
 
+      {/* Week Periodization Legend */}
+      <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-[11px]">
+        <span className="font-semibold text-slate-500 uppercase tracking-wider text-[10px]">Périodisation des semaines :</span>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-100 text-purple-800 border border-purple-300 font-bold">
+            <span className="w-1.5 h-1.5 rounded-full bg-purple-600"></span> Test
+          </span>
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-sky-100 text-sky-800 border border-sky-300 font-bold">
+            <span className="w-1.5 h-1.5 rounded-full bg-sky-600"></span> Volume
+          </span>
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-rose-100 text-rose-800 border border-rose-300 font-bold">
+            <span className="w-1.5 h-1.5 rounded-full bg-rose-600"></span> Intensité
+          </span>
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> Décharge
+          </span>
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 border border-amber-300 font-bold">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-600"></span> Affûtage
+          </span>
+        </div>
+      </div>
+
       {/* Calendar Grid Container */}
       <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
         <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-50 text-center py-2 text-[11px] sm:text-xs font-semibold text-slate-600">
@@ -426,6 +507,7 @@ export default function MonthCalendar({ plan, userProfile, onPlanUpdated, onOpen
             const isToday = isSameDay(cell.date, new Date());
             const isDraggingThis = draggedCellKey === cell.dateKey;
             const isDragOverThis = dragOverCellKey === cell.dateKey;
+            const phaseInfo = planEntry ? getPhaseColorBadge(planEntry) : null;
 
             return (
               <div
@@ -437,7 +519,9 @@ export default function MonthCalendar({ plan, userProfile, onPlanUpdated, onOpen
                   cell.isCurrentMonth ? 'bg-white' : 'bg-slate-50/50 text-slate-300'
                 } ${isToday ? 'ring-2 ring-inset ring-slate-900 bg-slate-50/60' : ''} ${
                   isDragOverThis ? 'bg-sky-50 ring-2 ring-inset ring-sky-500 scale-[0.99]' : ''
-                } ${isDraggingThis ? 'opacity-40' : ''}`}
+                } ${isDraggingThis ? 'opacity-40' : ''} ${
+                  planEntry && cell.isCurrentMonth ? phaseInfo.cellGlow : ''
+                }`}
               >
                 <div className="flex items-center justify-between">
                   <span
@@ -453,9 +537,20 @@ export default function MonthCalendar({ plan, userProfile, onPlanUpdated, onOpen
                   </span>
 
                   {planEntry && planEntry.dayItem.dayIndex === 0 && (
-                    <span className="hidden sm:inline-block text-[9px] font-semibold px-1 bg-slate-100 text-slate-500 rounded border border-slate-200">
-                      S{planEntry.weekNumber}
-                    </span>
+                    <div className="flex items-center gap-1">
+                      {(() => {
+                        const phaseColor = getPhaseColorBadge(planEntry);
+                        return (
+                          <span className={`text-[8px] sm:text-[9px] px-1.5 py-0.2 rounded-full border shadow-2xs ${phaseColor.badge}`}>
+                            <span className="sm:hidden">{phaseColor.shortLabel}</span>
+                            <span className="hidden sm:inline">{phaseColor.label}</span>
+                          </span>
+                        );
+                      })()}
+                      <span className="hidden sm:inline-block text-[9px] font-bold px-1 bg-slate-100 text-slate-600 rounded border border-slate-200">
+                        S{planEntry.weekNumber}
+                      </span>
+                    </div>
                   )}
                 </div>
 
