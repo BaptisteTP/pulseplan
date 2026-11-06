@@ -11,13 +11,14 @@ import {
   FileText, 
   Target, 
   Download, 
-  BarChart3,
-  Compass,
-  ClipboardCheck,
-  CheckCircle2,
-  AlertTriangle,
-  Sparkles,
-  ArrowRightLeft
+  BarChart3, 
+  Compass, 
+  ClipboardCheck, 
+  CheckCircle2, 
+  AlertTriangle, 
+  Sparkles, 
+  ArrowRightLeft,
+  Activity
 } from 'lucide-react';
 
 export default function Dashboard({ plan, userProfile, onPlanUpdated, onOpenExports, onOpenGenerator }) {
