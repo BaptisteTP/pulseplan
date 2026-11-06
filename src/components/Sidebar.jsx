@@ -88,13 +88,13 @@ export default function Sidebar({ activeTab, setActiveTab, currentPlan, backendS
         {/* Current Plan Summary Card */}
         {currentPlan && (
           <div className="m-3 p-3 rounded-lg bg-slate-50 border border-slate-200 text-xs">
-            <span className="text-[10px] font-mono uppercase text-slate-400 font-semibold block mb-0.5">
+            <span className="text-[10px] uppercase text-slate-400 font-semibold block mb-0.5">
               Plan en cours
             </span>
             <div className="font-semibold text-slate-900 text-xs truncate">
               {currentPlan.disciplineName} · {currentPlan.distanceLabel}
             </div>
-            <div className="flex items-center gap-2 mt-1 text-[11px] font-mono text-slate-500">
+            <div className="flex items-center gap-2 mt-1 text-[11px] text-slate-500 font-medium">
               <span>{currentPlan.totalWeeks} sem</span>
               <span>·</span>
               <span>{currentPlan.daysPerWeek}j/sem</span>

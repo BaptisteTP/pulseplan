@@ -111,7 +111,7 @@ export default function App() {
               <Menu className="w-5 h-5 text-slate-800 stroke-[2.2]" />
             </button>
 
-            <div className="flex items-center gap-1.5 text-xs text-slate-500 font-mono">
+            <div className="flex items-center gap-1.5 text-xs text-slate-500">
               <span className="font-bold text-slate-900 text-[13px] sm:text-xs">
                 {activeTab === 'calendar' && 'Calendrier Mensuel'}
                 {activeTab === 'dashboard' && 'Vue Semaine & Adaptation'}
@@ -121,13 +121,13 @@ export default function App() {
                 {activeTab === 'profile' && 'Profil Athlète & Zones'}
               </span>
               <span className="hidden sm:inline">·</span>
-              <span className="hidden sm:inline">{currentPlan ? `${currentPlan.disciplineName} (${currentPlan.distanceLabel})` : 'Aucun plan'}</span>
+              <span className="hidden sm:inline text-slate-600 font-medium">{currentPlan ? `${currentPlan.disciplineName} (${currentPlan.distanceLabel})` : 'Aucun plan'}</span>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-[11px] sm:text-xs text-slate-600 font-mono truncate max-w-[140px] sm:max-w-none">
-              <span className="hidden sm:inline">Athlète : </span><strong className="text-slate-900">{profile.name || profile.email}</strong>
+            <span className="text-[11px] sm:text-xs text-slate-600 truncate max-w-[140px] sm:max-w-none">
+              <span className="hidden sm:inline">Athlète : </span><strong className="text-slate-900 font-semibold">{profile.name || profile.email}</strong>
             </span>
           </div>
         </header>

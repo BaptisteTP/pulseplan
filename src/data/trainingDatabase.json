@@ -4,29 +4,29 @@
       "name": "Course à pied",
       "color": "rose",
       "distances": {
-        "5k": { "label": "5 Kilomètres", "weeks": 8, "defaultTSSPerWeek": 220 },
-        "10k": { "label": "10 Kilomètres", "weeks": 10, "defaultTSSPerWeek": 280 },
-        "semi": { "label": "Semi-Marathon (21.1k)", "weeks": 12, "defaultTSSPerWeek": 340 },
-        "marathon": { "label": "Marathon (42.195k)", "weeks": 16, "defaultTSSPerWeek": 410 }
+        "5k": { "label": "5 km", "weeks": 8, "defaultTSSPerWeek": 220 },
+        "10k": { "label": "10 km", "weeks": 10, "defaultTSSPerWeek": 280 },
+        "semi": { "label": "Semi-Marathon · 21.1 km", "weeks": 12, "defaultTSSPerWeek": 340 },
+        "marathon": { "label": "Marathon · 42.2 km", "weeks": 16, "defaultTSSPerWeek": 410 }
       }
     },
     "triathlon": {
       "name": "Triathlon",
       "color": "sky",
       "distances": {
-        "s": { "label": "Format S (Sprint: 750m / 20k / 5k)", "weeks": 10, "defaultTSSPerWeek": 320 },
-        "m": { "label": "Format M (Olympique: 1.5k / 40k / 10k)", "weeks": 12, "defaultTSSPerWeek": 420 },
-        "70.3": { "label": "Half Ironman 70.3 (1.9k / 90k / 21.1k)", "weeks": 16, "defaultTSSPerWeek": 530 },
-        "ironman": { "label": "Ironman XXL (3.8k / 180k / 42.2k)", "weeks": 20, "defaultTSSPerWeek": 680 }
+        "s": { "label": "Format S · Sprint (750m / 20k / 5k)", "weeks": 10, "defaultTSSPerWeek": 320 },
+        "m": { "label": "Format M · Olympique (1.5k / 40k / 10k)", "weeks": 12, "defaultTSSPerWeek": 420 },
+        "70.3": { "label": "Half Ironman 70.3 · (1.9k / 90k / 21.1k)", "weeks": 16, "defaultTSSPerWeek": 530 },
+        "ironman": { "label": "Ironman XXL · (3.8k / 180k / 42.2k)", "weeks": 20, "defaultTSSPerWeek": 680 }
       }
     },
     "trail": {
       "name": "Trail & Ultra",
       "color": "amber",
       "distances": {
-        "court": { "label": "Trail Découverte (20k - 1000m D+)", "weeks": 8, "defaultTSSPerWeek": 290 },
-        "50k": { "label": "Trail Moyen 50k (2500m D+)", "weeks": 14, "defaultTSSPerWeek": 430 },
-        "ultra": { "label": "Ultra Trail 100k+ (5000m+ D+)", "weeks": 20, "defaultTSSPerWeek": 590 }
+        "court": { "label": "Trail Découverte · 20 km (1000m D+)", "weeks": 8, "defaultTSSPerWeek": 290 },
+        "50k": { "label": "Trail Moyen · 50 km (2500m D+)", "weeks": 14, "defaultTSSPerWeek": 430 },
+        "ultra": { "label": "Ultra Trail · 100 km+ (5000m+ D+)", "weeks": 20, "defaultTSSPerWeek": 590 }
       }
     }
   },

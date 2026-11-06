@@ -130,7 +130,7 @@ export default function Dashboard({ plan, userProfile, onPlanUpdated, onOpenExpo
               {plan.raceDate && (
                 <>
                   <span className="text-slate-300">·</span>
-                  <span className="font-mono text-sky-800 font-semibold flex items-center gap-1">
+                  <span className="text-sky-800 font-semibold flex items-center gap-1">
                     <Calendar className="w-3 h-3 text-sky-600" />
                     {new Date(plan.raceDate).toLocaleDateString('fr-FR')}
                   </span>
@@ -139,8 +139,8 @@ export default function Dashboard({ plan, userProfile, onPlanUpdated, onOpenExpo
               {plan.targetPaceData && (
                 <>
                   <span className="text-slate-300">·</span>
-                  <span className="font-mono text-slate-700 font-medium">
-                    Allure : {plan.targetPaceData.formattedPace} ({plan.targetPaceData.speedKmh} km/h)
+                  <span className="text-slate-700 font-medium">
+                    Allure : <span className="font-mono font-semibold">{plan.targetPaceData.formattedPace}</span> ({plan.targetPaceData.speedKmh} km/h)
                   </span>
                 </>
               )}
@@ -149,22 +149,22 @@ export default function Dashboard({ plan, userProfile, onPlanUpdated, onOpenExpo
 
           <div className="flex items-center justify-between sm:justify-end gap-4 border-t sm:border-t-0 border-slate-100 pt-2.5 sm:pt-0">
             <div>
-              <div className="text-[10px] font-mono text-slate-400 uppercase">Volume</div>
+              <div className="text-[10px] text-slate-400 uppercase font-medium">Volume</div>
               <div className="text-base sm:text-lg font-bold text-slate-900 tabular-nums">{totalHours}h</div>
             </div>
             <div className="border-l border-slate-200 pl-4">
-              <div className="text-[10px] font-mono text-slate-400 uppercase">TSS</div>
+              <div className="text-[10px] text-slate-400 uppercase font-medium">TSS</div>
               <div className="text-base sm:text-lg font-bold text-slate-900 tabular-nums">{totalTSS}</div>
             </div>
             <div className="border-l border-slate-200 pl-4">
-              <div className="text-[10px] font-mono text-slate-400 uppercase">Semaines</div>
+              <div className="text-[10px] text-slate-400 uppercase font-medium">Semaines</div>
               <div className="text-base sm:text-lg font-bold text-slate-900 tabular-nums">{plan.totalWeeks}</div>
             </div>
           </div>
         </div>
 
         {plan.baseBuildingWeeksCount > 0 && (
-          <div className="mt-2.5 pt-2 border-t border-slate-100 text-[11px] font-mono text-slate-500 flex flex-wrap items-center gap-1.5">
+          <div className="mt-2.5 pt-2 border-t border-slate-100 text-[11px] text-slate-500 flex flex-wrap items-center gap-1.5">
             <span className="px-1.5 py-0.5 rounded bg-sky-50 text-sky-800 border border-sky-200 font-semibold">
               {plan.baseBuildingWeeksCount} sem Volume
             </span>

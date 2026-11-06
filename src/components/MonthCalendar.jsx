@@ -347,17 +347,17 @@ export default function MonthCalendar({ plan, userProfile, onPlanUpdated, onOpen
           </h2>
         </div>
 
-        <div className="flex items-center justify-between sm:justify-end gap-4 text-xs font-mono border-t sm:border-t-0 border-slate-100 pt-2 sm:pt-0">
+        <div className="flex items-center justify-between sm:justify-end gap-4 text-xs border-t sm:border-t-0 border-slate-100 pt-2 sm:pt-0">
           <div>
-            <span className="text-slate-400 uppercase text-[9px] block">Séances</span>
+            <span className="text-slate-400 uppercase text-[9px] font-semibold block">Séances</span>
             <span className="text-slate-900 font-bold text-xs sm:text-sm">{monthWorkoutsCount}</span>
           </div>
           <div className="border-l border-slate-200 pl-4">
-            <span className="text-slate-400 uppercase text-[9px] block">Volume</span>
+            <span className="text-slate-400 uppercase text-[9px] font-semibold block">Volume</span>
             <span className="text-slate-900 font-bold text-xs sm:text-sm">{Math.floor(monthTotalDuration / 60)}h{monthTotalDuration % 60}m</span>
           </div>
           <div className="border-l border-slate-200 pl-4">
-            <span className="text-slate-400 uppercase text-[9px] block">TSS</span>
+            <span className="text-slate-400 uppercase text-[9px] font-semibold block">TSS</span>
             <span className="text-slate-900 font-bold text-xs sm:text-sm">{monthTotalTSS}</span>
           </div>
         </div>
@@ -365,7 +365,7 @@ export default function MonthCalendar({ plan, userProfile, onPlanUpdated, onOpen
 
       {/* Calendar Grid Container */}
       <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
-        <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-50 text-center py-2 text-[11px] sm:text-xs font-mono font-semibold text-slate-600">
+        <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-50 text-center py-2 text-[11px] sm:text-xs font-semibold text-slate-600">
           {WEEKDAY_NAMES_LONG.map((name, i) => (
             <div key={name} className={i >= 5 ? 'text-slate-900 font-bold' : ''}>
               <span className="sm:hidden">{WEEKDAY_NAMES_SHORT[i]}</span>
@@ -396,7 +396,7 @@ export default function MonthCalendar({ plan, userProfile, onPlanUpdated, onOpen
               >
                 <div className="flex items-center justify-between">
                   <span
-                    className={`text-[11px] sm:text-xs font-mono font-medium rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center ${
+                    className={`text-[11px] sm:text-xs font-semibold rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center ${
                       isToday
                         ? 'bg-slate-900 text-white font-bold'
                         : cell.isCurrentMonth
@@ -408,7 +408,7 @@ export default function MonthCalendar({ plan, userProfile, onPlanUpdated, onOpen
                   </span>
 
                   {planEntry && planEntry.dayItem.dayIndex === 0 && (
-                    <span className="hidden sm:inline-block text-[9px] font-mono font-medium px-1 bg-slate-100 text-slate-500 rounded border border-slate-200">
+                    <span className="hidden sm:inline-block text-[9px] font-semibold px-1 bg-slate-100 text-slate-500 rounded border border-slate-200">
                       S{planEntry.weekNumber}
                     </span>
                   )}
@@ -440,10 +440,10 @@ export default function MonthCalendar({ plan, userProfile, onPlanUpdated, onOpen
                               <GripVertical className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity hidden sm:block shrink-0" />
                             </div>
                             
-                            <div className="mt-0.5 sm:mt-1 flex items-center justify-between text-[9px] sm:text-[10px] font-mono opacity-85">
-                              <span>{workout.durationMinutes}m</span>
+                            <div className="mt-0.5 sm:mt-1 flex items-center justify-between text-[10px] opacity-90 font-medium">
+                              <span>{workout.durationMinutes} min</span>
                               {garmin ? (
-                                <span className="hidden sm:inline-block text-[9px] font-medium bg-white/70 px-1 rounded border border-black/5">
+                                <span className="hidden sm:inline-block text-[9px] font-semibold bg-white/70 px-1 rounded border border-black/5">
                                   TE {garmin.aerobicTE}
                                 </span>
                               ) : null}
