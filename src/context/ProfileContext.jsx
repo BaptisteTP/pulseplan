@@ -13,6 +13,7 @@ const DEFAULT_PROFILE = {
   name: '',
   email: '',
   level: 'Intermédiaire',
+  swimLevel: 'intermediaire', // 'debutant' | 'intermediaire' | 'avance'
   hasPowerMeter: false,
   vma: '',
   ftp: '',
@@ -50,7 +51,6 @@ export function ProfileProvider({ children }) {
 
   const [cloudPlan, setCloudPlan] = useState(null);
 
-  // Sync profile from backend when user logs in or switches browser
   useEffect(() => {
     if (user && user.email) {
       let isMounted = true;
@@ -69,7 +69,6 @@ export function ProfileProvider({ children }) {
     }
   }, [user?.email]);
 
-  // Persist profile locally and to cloud
   const updateProfile = (fields) => {
     setProfile(prev => {
       const updated = { ...prev, ...fields };
@@ -83,8 +82,6 @@ export function ProfileProvider({ children }) {
 
   const login = async (email, password, athleteName) => {
     const finalName = athleteName || (profile.name ? profile.name : email.split('@')[0]);
-    
-    // Call backend API login endpoint
     const backendRes = await loginUserApi(email, password, finalName);
     
     let authenticatedUser;
@@ -99,7 +96,6 @@ export function ProfileProvider({ children }) {
         setCloudPlan(backendRes.currentPlan);
       }
     } else {
-      // Offline fallback
       authenticatedUser = {
         id: 'usr_' + Date.now(),
         email,

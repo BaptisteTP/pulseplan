@@ -17,7 +17,7 @@ import {
   Calendar,
   Layers,
   Sparkles,
-  Info
+  Waves
 } from 'lucide-react';
 
 export default function GeneratorForm({ onPlanGenerated }) {
@@ -28,13 +28,13 @@ export default function GeneratorForm({ onPlanGenerated }) {
   const [selectedDistance, setSelectedDistance] = useState(profile.currentDistance || 'marathon');
   const [daysPerWeek, setDaysPerWeek] = useState(profile.daysPerWeek || 4);
   const [hasPowerMeter, setHasPowerMeter] = useState(profile.hasPowerMeter || false);
+  const [swimLevel, setSwimLevel] = useState(profile.swimLevel || 'intermediaire');
   const [targetTime, setTargetTime] = useState(profile.targetTime || '');
   const [raceDate, setRaceDate] = useState(profile.raceDate || '');
 
   const availableDistances = disciplines[selectedDiscipline]?.distances || {};
   const standardSpecificWeeks = availableDistances[selectedDistance]?.weeks || 12;
 
-  // Calculate timeline
   const weeksUntilRace = raceDate ? calculateWeeksUntilDate(raceDate) : null;
   const hasExtraVolumePhase = weeksUntilRace && weeksUntilRace > standardSpecificWeeks;
   const extraVolumeWeeks = hasExtraVolumePhase ? weeksUntilRace - standardSpecificWeeks : 0;
@@ -62,6 +62,7 @@ export default function GeneratorForm({ onPlanGenerated }) {
       currentDistance: selectedDistance,
       daysPerWeek,
       hasPowerMeter,
+      swimLevel,
       targetTime: finalTargetTime,
       raceDate: raceDate || null
     });
@@ -72,9 +73,11 @@ export default function GeneratorForm({ onPlanGenerated }) {
       daysPerWeek,
       targetTime: finalTargetTime,
       raceDate: raceDate || null,
+      swimLevel,
       userProfile: {
         ...profile,
-        hasPowerMeter
+        hasPowerMeter,
+        swimLevel
       }
     });
 
@@ -88,11 +91,11 @@ export default function GeneratorForm({ onPlanGenerated }) {
           <div className="flex items-center gap-2">
             <Sliders className="w-4 h-4 text-slate-800" />
             <h2 className="text-base font-bold text-slate-900">
-              Générateur d'Entraînement Coaché (Périodisation & Date de Course)
+              Générateur d'Entraînement Coaché (Séances Variées & Niveaux)
             </h2>
           </div>
           <p className="text-xs text-slate-500 mt-1">
-            Indiquez la date de votre objectif. Le coach calculera le temps disponible : <strong>prise de volume aérobie</strong> en amont pour bâtir le moteur, puis bascule automatique dans le <strong>bloc de préparation spécifique</strong>.
+            Les séances alternent chaque semaine (Fartlek, VMA courte 30/30, VMA longue, Seuil 3x8, Allure progressive, Sortie vallonnée) pour éviter toute monotonie.
           </p>
         </div>
 
@@ -131,6 +134,44 @@ export default function GeneratorForm({ onPlanGenerated }) {
             </div>
           </div>
 
+          {/* Swim Level Option for Triathlon */}
+          {selectedDiscipline === 'triathlon' && (
+            <div className="p-4 bg-sky-50/50 border border-sky-100 rounded-lg space-y-2">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-900">
+                <Waves className="w-4 h-4 text-sky-600" />
+                <span>Niveau en Natation (3 Niveaux d'entraînement)</span>
+              </div>
+              <p className="text-[11px] text-slate-500">
+                Ajuste les distances de bassin, le nombre de séries et la technicité des éducatifs.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
+                {[
+                  { id: 'debutant', label: '1. Débutant', desc: 'Respiration 3 temps, flottaison & séries 50-100m (~1300m)' },
+                  { id: 'intermediaire', label: '2. Intermédiaire', desc: 'Crawl continu, vitesse CSS & séries 100-200m (~2300m)' },
+                  { id: 'avance', label: '3. Avancé', desc: 'Gros volume, plaquettes, relances & départs triathlon (~3200m)' }
+                ].map((lvl) => {
+                  const isSelected = swimLevel === lvl.id;
+                  return (
+                    <button
+                      key={lvl.id}
+                      type="button"
+                      onClick={() => setSwimLevel(lvl.id)}
+                      className={`p-2.5 rounded-lg border text-left transition-all cursor-pointer ${
+                        isSelected
+                          ? 'border-sky-600 bg-white text-slate-900 shadow-xs ring-1 ring-sky-500'
+                          : 'border-slate-200 bg-white/70 text-slate-700 hover:bg-white'
+                      }`}
+                    >
+                      <div className="font-bold text-xs">{lvl.label}</div>
+                      <div className="text-[10px] text-slate-500 mt-0.5">{lvl.desc}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Step 2: Distance */}
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-2">
@@ -160,7 +201,7 @@ export default function GeneratorForm({ onPlanGenerated }) {
             </div>
           </div>
 
-          {/* Step 3: Race Date & Periodization Preview */}
+          {/* Step 3: Race Date */}
           <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <label className="text-xs font-semibold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
@@ -168,7 +209,7 @@ export default function GeneratorForm({ onPlanGenerated }) {
                 <span>3. Date de la Compétition / Course Cible</span>
               </label>
               <span className="text-[11px] font-mono text-slate-500">
-                Bloc spécifique requis : {standardSpecificWeeks} semaines
+                Bloc spécifique standard : {standardSpecificWeeks} sem
               </span>
             </div>
 
@@ -182,24 +223,24 @@ export default function GeneratorForm({ onPlanGenerated }) {
                   className="w-full bg-white border border-slate-300 rounded-md px-3 py-2 text-xs font-mono font-bold text-slate-900 focus:outline-none focus:border-slate-700"
                 />
                 <p className="text-[10px] text-slate-400 mt-1 font-mono">
-                  Laissez vide pour générer directement le bloc spécifique de {standardSpecificWeeks} semaines.
+                  Laissez vide pour démarrer directement sur le bloc de {standardSpecificWeeks} semaines.
                 </p>
               </div>
 
               {weeksUntilRace ? (
                 <div className="p-3 bg-white border border-slate-200 rounded-md text-xs font-mono space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-500">Délai total avant course :</span>
+                    <span className="text-slate-500">Délai total :</span>
                     <strong className="text-slate-900">{weeksUntilRace} semaines</strong>
                   </div>
                   
                   {hasExtraVolumePhase ? (
                     <div className="text-[11px] text-emerald-700 leading-tight pt-1 border-t border-slate-100">
-                      ✓ <strong>{extraVolumeWeeks} semaines de Prise de Volume</strong> en amont, puis bascule automatique dans les <strong>{standardSpecificWeeks} semaines de prépa spécifique</strong>.
+                      ✓ <strong>{extraVolumeWeeks} sem de Prise de Volume</strong> en amont, puis <strong>{standardSpecificWeeks} sem de prépa spécifique</strong>.
                     </div>
                   ) : (
                     <div className="text-[11px] text-amber-700 leading-tight pt-1 border-t border-slate-100">
-                      ⚡ Préparation condensée : bascule immédiate dans le bloc spécifique ({weeksUntilRace} sem).
+                      ⚡ Bascule immédiate dans le bloc spécifique ({weeksUntilRace} sem).
                     </div>
                   )}
                 </div>
@@ -211,7 +252,7 @@ export default function GeneratorForm({ onPlanGenerated }) {
             </div>
           </div>
 
-          {/* Step 4: Target Time & Coach Pace Calculation */}
+          {/* Step 4: Target Time */}
           <div className="p-4 bg-white border border-slate-200 rounded-lg">
             <div className="flex items-center justify-between mb-2">
               <label className="text-xs font-semibold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
@@ -242,15 +283,12 @@ export default function GeneratorForm({ onPlanGenerated }) {
                   <div className="text-slate-900 font-bold text-sm mt-0.5">
                     {pacePreview.formattedPace} ({pacePreview.speedKmh} km/h)
                   </div>
-                  <div className="text-[11px] text-slate-500 mt-0.5">
-                    {targetTime.trim() === '' ? `Entrez votre chrono ou laissez vide pour viser ~${defaultDistanceTime}` : 'Vos séances spécifiques seront calibrées exactement sur cette allure.'}
-                  </div>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Step 5: Cycling Power Meter option */}
+          {/* Step 5: Power meter toggle */}
           {(selectedDiscipline === 'triathlon' || selectedDiscipline === 'running') && (
             <div className="p-4 bg-white border border-slate-200 rounded-lg">
               <div className="flex items-start justify-between gap-3">
@@ -289,16 +327,6 @@ export default function GeneratorForm({ onPlanGenerated }) {
                   </button>
                 </div>
               </div>
-
-              {!hasPowerMeter ? (
-                <div className="mt-2.5 text-[11px] text-slate-500 bg-slate-50 p-2.5 rounded border border-slate-200">
-                  ✓ <strong>Séances vélo guidées au RPE & Cardio :</strong> Pas de watts requis.
-                </div>
-              ) : (
-                <div className="mt-2.5 text-[11px] text-slate-500 bg-slate-50 p-2.5 rounded border border-slate-200">
-                  ✓ <strong>Mode Puissance actif :</strong> Intervalles Sweet Spot et watts cibles.
-                </div>
-              )}
             </div>
           )}
 
@@ -332,7 +360,6 @@ export default function GeneratorForm({ onPlanGenerated }) {
           <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="text-xs text-slate-500 font-mono">
               Athlète : <strong>{profile.name || 'Athlète'}</strong> · Objectif : <span className="font-bold text-slate-900">{targetTime || `~${defaultDistanceTime}`}</span>
-              {raceDate && <span className="ml-2 text-sky-700 font-semibold">({new Date(raceDate).toLocaleDateString('fr-FR')})</span>}
             </div>
 
             <button

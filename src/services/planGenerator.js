@@ -1,18 +1,12 @@
 import database from '../data/trainingDatabase.json';
 
 /**
- * PulsePlan Coach Engine with Target Race Date (Date de Course Cible)
- * 1. Target Race Date Calculation:
- *    - totalAvailableWeeks = weeks between today (next Monday) and raceDate
- *    - specificWeeksRequired = standard prep duration for distance (e.g. 12 weeks for Semi, 16 for Marathon)
- *    - if totalAvailableWeeks > specificWeeksRequired:
- *        phase 1: Fondations & Prise de Volume Aérobie (Building Base)
- *        phase 2: Étalonnage Semaine 1
- *        phase 3: Préparation Spécifique Allure Course
- *        phase 4: Affûtage pré-compétition
- * 2. Athletic Baseline Calibration Week
- * 3. Cycling with/without power meter
- * 4. Garmin physiological impact metrics
+ * PulsePlan Coach Engine
+ * Features:
+ * - Varied running sessions (30/30, fartlek nature, seuil 3x8, progressif negative split, sortie longue vallonnée)
+ * - 3 Swim levels: Débutant (respiration/flottaison), Intermédiaire (catch/CSS), Avancé (seuil gros volume/VO2Max eau libre)
+ * - True week-by-week variation (periodization rotation so consecutive weeks have varied session flavors)
+ * - Target Race Date periodization (base volume building prior to specific block)
  */
 
 export const DAYS_OF_WEEK = [
@@ -211,15 +205,14 @@ export function generateTrainingPlan({
   daysPerWeek = 4,
   targetTime = null,
   raceDate = null,
+  swimLevel = 'intermediaire',
   userProfile = {}
 }) {
   const disciplineInfo = database.disciplines[disciplineKey];
   const distanceInfo = disciplineInfo?.distances[distanceKey] || { weeks: 12, defaultTSSPerWeek: 350, label: 'Course' };
   
-  // Specific prep duration required for distance (e.g. 12 weeks for semi, 16 for marathon)
   const standardSpecificWeeks = distanceInfo.weeks || 12;
 
-  // Calculate total available weeks if raceDate provided
   let totalWeeks = standardSpecificWeeks;
   let baseBuildingWeeksCount = 0;
 
@@ -228,7 +221,6 @@ export function generateTrainingPlan({
     if (calculatedWeeks && calculatedWeeks >= 4) {
       totalWeeks = calculatedWeeks;
       if (totalWeeks > standardSpecificWeeks) {
-        // Extra weeks before specific prep are dedicated to Aerobic Base Building (Prise de Volume)
         baseBuildingWeeksCount = totalWeeks - standardSpecificWeeks;
       }
     }
@@ -240,6 +232,7 @@ export function generateTrainingPlan({
   const targetSlots = SCHEDULE_TEMPLATES[daysPerWeek] || SCHEDULE_TEMPLATES[4];
   const library = database.library;
   const hasPower = Boolean(userProfile.hasPowerMeter);
+  const effectiveSwimLevel = swimLevel || userProfile.swimLevel || 'intermediaire';
 
   const weeks = [];
 
@@ -247,9 +240,8 @@ export function generateTrainingPlan({
     const isBaselineWeek = (w === 1);
     const isRecoveryWeek = (w % 4 === 0) && w !== totalWeeks && !isBaselineWeek;
 
-    // Periodization based on Race Date
     let phase = 'Développement Foncier';
-    let phaseCategory = 'base'; // 'base_building', 'baseline_test', 'specific_prep', 'taper'
+    let phaseCategory = 'base';
     let volumeMultiplier = 1.0;
 
     if (isBaselineWeek) {
@@ -257,12 +249,10 @@ export function generateTrainingPlan({
       phaseCategory = 'baseline_test';
       volumeMultiplier = 0.85;
     } else if (baseBuildingWeeksCount > 0 && w <= baseBuildingWeeksCount) {
-      // PHASE 1: Prise de Volume & Foncier Aérobie
       phase = `Prise de Volume & Foncier Aérobie (S${w}/${baseBuildingWeeksCount})`;
       phaseCategory = 'base_building';
       volumeMultiplier = 0.90 + ((w - 1) * 0.04);
     } else {
-      // PHASE 2 & 3: Préparation Spécifique & Affûtage
       const specificWeekIndex = w - baseBuildingWeeksCount;
       const weeksUntilRace = totalWeeks - w + 1;
 
@@ -306,6 +296,7 @@ export function generateTrainingPlan({
         dayIndex,
         targetSlots,
         library,
+        weekNumber: w,
         phase,
         phaseCategory,
         volumeMultiplier,
@@ -313,7 +304,8 @@ export function generateTrainingPlan({
         isBaselineWeek,
         isRecoveryWeek,
         hasPower,
-        targetPaceData
+        targetPaceData,
+        swimLevel: effectiveSwimLevel
       });
 
       return {
@@ -355,6 +347,7 @@ export function generateTrainingPlan({
     targetTime: effectiveTargetTime,
     targetPaceData,
     hasPowerMeter: hasPower,
+    swimLevel: effectiveSwimLevel,
     createdAt: new Date().toISOString(),
     weeks
   };
@@ -365,6 +358,7 @@ function pickWorkoutForSlot({
   dayIndex,
   targetSlots,
   library,
+  weekNumber,
   phase,
   phaseCategory,
   volumeMultiplier,
@@ -372,7 +366,8 @@ function pickWorkoutForSlot({
   isBaselineWeek,
   isRecoveryWeek,
   hasPower,
-  targetPaceData
+  targetPaceData,
+  swimLevel
 }) {
   let template;
 
@@ -386,76 +381,75 @@ function pickWorkoutForSlot({
     } else if (dayIndex === targetSlots[1] && disciplineKey === 'triathlon') {
       template = BASELINE_TEST_WORKOUTS.running;
     } else if (dayIndex === targetSlots[targetSlots.length - 1]) {
-      template = library.running.find(w => w.category === 'endurance');
+      template = library.running.find(w => w.id === 'run_ef_base');
     } else {
-      template = library.running.find(w => w.category === 'recovery') || library.running[0];
+      template = library.running.find(w => w.id === 'run_recup') || library.running[0];
     }
   }
 
-  // Phase 1: Base Building prioritizes aerobic capacity, long slow distance and recovery
-  if (!template && phaseCategory === 'base_building') {
-    const isWeekendLongSlot = (dayIndex === 5 || dayIndex === 6);
-    if (disciplineKey === 'running') {
-      if (isWeekendLongSlot) {
-        template = library.running.find(w => w.category === 'long') || library.running[0];
-      } else if (dayIndex === targetSlots[0]) {
-        // Light fartlek / tempo instead of hard VO2Max
-        template = library.running.find(w => w.category === 'tempo') || library.running[0];
+  // Running selection: Dynamic rotation based on weekNumber so workouts alternate
+  if (!template && disciplineKey === 'running') {
+    const isWeekendLong = (dayIndex === 5 || dayIndex === 6 || dayIndex === targetSlots[targetSlots.length - 1]);
+    
+    if (isWeekendLong) {
+      // Alternate between flat specific long run and undulating hill long run
+      template = (weekNumber % 2 === 0)
+        ? (library.running.find(w => w.id === 'run_long_ondulante') || library.running.find(w => w.id === 'run_long_run'))
+        : library.running.find(w => w.id === 'run_long_run');
+    } else if (dayIndex === targetSlots[0]) {
+      // Quality Slot 1: Alternate 30/30 VO2Max, Fartlek and VMA longue
+      if (isRecoveryWeek) {
+        template = library.running.find(w => w.id === 'run_recup');
+      } else if (weekNumber % 3 === 1) {
+        template = library.running.find(w => w.id === 'run_vma_short');
+      } else if (weekNumber % 3 === 2) {
+        template = library.running.find(w => w.id === 'run_fartlek_nature');
       } else {
-        template = library.running.find(w => w.category === 'endurance');
+        template = library.running.find(w => w.id === 'run_vma_longue') || library.running.find(w => w.id === 'run_vma_short');
       }
-    } else if (disciplineKey === 'triathlon') {
-      if (dayIndex === 5) {
-        template = library.cycling.find(w => w.category === 'long') || library.cycling[0];
-      } else if (dayIndex === 6) {
-        template = library.running.find(w => w.category === 'long') || library.running[0];
-      } else {
-        template = library.swimming[0] || library.cycling[0];
-      }
-    } else if (disciplineKey === 'trail') {
-      if (isWeekendLongSlot) {
-        template = library.trail.find(w => w.category === 'long') || library.trail[0];
-      } else {
-        template = library.running.find(w => w.category === 'endurance');
-      }
+    } else if (dayIndex === targetSlots[1] && targetSlots.length >= 4) {
+      // Quality Slot 2 (Threshold / Tempo): Alternate Seuil blocs vs Progressif negative split
+      template = (weekNumber % 2 === 0)
+        ? (library.running.find(w => w.id === 'run_tempo_progressif') || library.running.find(w => w.id === 'run_tempo_seuil'))
+        : library.running.find(w => w.id === 'run_tempo_seuil');
+    } else {
+      // Aerobic endurance / recovery
+      template = library.running.find(w => w.id === 'run_ef_base');
     }
   }
 
-  if (!template) {
-    const isWeekendLongSlot = (dayIndex === 5 || dayIndex === 6);
+  // Triathlon selection: swimming according to level + bike variation
+  if (!template && disciplineKey === 'triathlon') {
+    const swimPool = library.swimming[swimLevel] || library.swimming['intermediaire'];
 
-    if (disciplineKey === 'running') {
-      if (isWeekendLongSlot) {
-        template = library.running.find(w => w.category === 'long') || library.running[0];
-      } else if (dayIndex === targetSlots[0]) {
-        template = isRecoveryWeek 
-          ? library.running.find(w => w.category === 'recovery') 
-          : library.running.find(w => w.category === 'interval');
-      } else if (dayIndex === targetSlots[1] && targetSlots.length >= 4) {
-        template = library.running.find(w => w.category === 'tempo') || library.running[0];
-      } else {
-        template = library.running.find(w => w.category === 'endurance');
-      }
-    } else if (disciplineKey === 'triathlon') {
-      if (dayIndex === 5) {
-        template = library.cycling.find(w => w.category === 'long') || library.cycling[0];
-      } else if (dayIndex === 6) {
-        template = (phase.includes('Spécifique') && library.brick?.length)
-          ? library.brick[0]
-          : library.running.find(w => w.category === 'long') || library.running[0];
-      } else if (dayIndex === targetSlots[0]) {
-        template = library.swimming.find(w => w.category === 'interval') || library.swimming[0];
-      } else {
-        template = library.cycling.find(w => w.category === 'interval') || library.cycling[0];
-      }
-    } else if (disciplineKey === 'trail') {
-      if (isWeekendLongSlot) {
-        template = library.trail.find(w => w.category === 'long') || library.trail[0];
-      } else if (dayIndex === targetSlots[0]) {
-        template = library.trail.find(w => w.category === 'interval') || library.trail[0];
-      } else {
-        template = library.trail.find(w => w.category === 'technique') || library.running[0];
-      }
+    if (dayIndex === 5) {
+      template = (weekNumber % 2 === 0)
+        ? (library.cycling.find(w => w.id === 'bike_force_velocite') || library.cycling.find(w => w.id === 'bike_sweetspot'))
+        : library.cycling.find(w => w.id === 'bike_long_endurance');
+    } else if (dayIndex === 6) {
+      template = (phase.includes('Spécifique') && library.brick?.length && weekNumber % 2 === 1)
+        ? library.brick[0]
+        : library.running.find(w => w.id === 'run_long_run') || library.running[0];
+    } else if (dayIndex === targetSlots[0]) {
+      // Swim session rotated
+      template = swimPool[weekNumber % swimPool.length] || swimPool[0];
+    } else {
+      template = (weekNumber % 2 === 0)
+        ? library.cycling.find(w => w.id === 'bike_sweetspot')
+        : library.running.find(w => w.id === 'run_fartlek_nature') || library.running[0];
+    }
+  }
+
+  if (!template && disciplineKey === 'trail') {
+    const isWeekendLong = (dayIndex === 5 || dayIndex === 6);
+    if (isWeekendLong) {
+      template = library.trail.find(w => w.id === 'trail_long_dplus');
+    } else if (dayIndex === targetSlots[0]) {
+      template = library.trail.find(w => w.id === 'trail_cote_pma');
+    } else {
+      template = (weekNumber % 2 === 0)
+        ? library.trail.find(w => w.id === 'trail_descente_technique')
+        : library.running.find(w => w.id === 'run_fartlek_nature');
     }
   }
 
