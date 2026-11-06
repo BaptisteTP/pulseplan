@@ -234,7 +234,7 @@
     "cycling": [
       {
         "id": "bike_z2_endurance",
-        "title": "Vélo - Endurance Aérobie & Cadence",
+        "title": "Vélo - Endurance Aérobie & Cadence Fluide",
         "sport": "cycling",
         "category": "endurance",
         "baseDurationMinutes": 90,
@@ -256,11 +256,11 @@
       },
       {
         "id": "bike_sweetspot",
-        "title": "Vélo - Sweet Spot Intervalles (88-93% FTP)",
+        "title": "Vélo - Sweet Spot Intervalles (3 x 12 min)",
         "sport": "cycling",
         "category": "interval",
         "baseDurationMinutes": 75,
-        "intensity": "Sweet Spot (88-93% FTP)",
+        "intensity": "Sweet Spot (88-93% FTP ou RPE 7-8)",
         "description": "Le meilleur ratio gain de puissance / coût de fatigue pour le triathlon et le cyclisme.",
         "garminImpact": {
           "primaryBenefit": "Capacité Aérobie Élevée",
@@ -278,7 +278,7 @@
       },
       {
         "id": "bike_force_velocite",
-        "title": "Vélo - Force Sous-Max & Vélocité",
+        "title": "Vélo - Force Sous-Max & Vélocité Pyramidale",
         "sport": "cycling",
         "category": "interval",
         "baseDurationMinutes": 70,
@@ -296,6 +296,50 @@
           { "name": "Échauffement complet", "duration": "15 min", "zone": "Z2" },
           { "name": "4 x (4 min grand plateau 55 rpm force / 2 min petit plateau 105 rpm)", "duration": "24 min", "zone": "Z3 Force" },
           { "name": "Retour au calme molinette", "duration": "31 min", "zone": "Z1" }
+        ]
+      },
+      {
+        "id": "bike_pma_vo2",
+        "title": "Vélo - PMA Intervalles Courts 30s/30s (Z5)",
+        "sport": "cycling",
+        "category": "interval",
+        "baseDurationMinutes": 65,
+        "intensity": "115-120% FTP (PMA) / RPE 9/10",
+        "description": "Fractionné court sur le vélo pour repousser la Puissance Maximale Aérobie.",
+        "garminImpact": {
+          "primaryBenefit": "PMA & Puissance Cardiaque",
+          "aerobicTE": 4.0,
+          "anaerobicTE": 3.5,
+          "epocRange": "Très Élevé (115-140 ml/kg)",
+          "muscleAdaptation": "Débit cardiaque maximal & résistance à la lactémie sur le vélo",
+          "dominantFuel": "Glycogène pur"
+        },
+        "steps": [
+          { "name": "Échauffement progressif + 2 sprints 5s", "duration": "20 min", "zone": "Z2" },
+          { "name": "2 séries de 8x (30s à 115% FTP / 30s récup)", "duration": "18 min", "zone": "Z5 PMA" },
+          { "name": "Retour au calme en tournant les jambes", "duration": "27 min", "zone": "Z1" }
+        ]
+      },
+      {
+        "id": "bike_seuil_over_under",
+        "title": "Vélo - Over-Under Seuil Lactique (3 x 10 min)",
+        "sport": "cycling",
+        "category": "interval",
+        "baseDurationMinutes": 75,
+        "intensity": "Oscillation 2 min sous le seuil (90% FTP) / 1 min au-dessus (105% FTP)",
+        "description": "Apprendre au corps à recycler le lactate produit à haute intensité tout en continuant de rouler fort.",
+        "garminImpact": {
+          "primaryBenefit": "Clairance Lactique & Résistance",
+          "aerobicTE": 3.9,
+          "anaerobicTE": 2.2,
+          "epocRange": "Élevé (105-125 ml/kg)",
+          "muscleAdaptation": "Transports membranaires MCT1/MCT4 & clairance de l'acide lactique",
+          "dominantFuel": "Glycogène (80%)"
+        },
+        "steps": [
+          { "name": "Mise en route progressive", "duration": "15 min", "zone": "Z2" },
+          { "name": "3 x 9 min Over-Under (3x [2 min 90% / 1 min 105%]) R=4 min", "duration": "35 min", "zone": "Seuil" },
+          { "name": "Retour souple", "duration": "25 min", "zone": "Z1" }
         ]
       },
       {
@@ -318,6 +362,28 @@
           { "name": "Départ progressif", "duration": "20 min", "zone": "Z1-Z2" },
           { "name": "Gros volume de maintien Z2", "duration": "110 min", "zone": "Z2" },
           { "name": "Retour souple", "duration": "20 min", "zone": "Z1" }
+        ]
+      },
+      {
+        "id": "bike_long_tempo_tri",
+        "title": "Vélo - Sortie Longue Allure Course & Prolongateurs",
+        "sport": "cycling",
+        "category": "long",
+        "baseDurationMinutes": 135,
+        "intensity": "Z2 avec 2 gros blocs Z3 en position aéro",
+        "description": "Sortie rythmée sur le vélo de chrono / prolongateurs pour habituer le dos et les fessiers à la position.",
+        "garminImpact": {
+          "primaryBenefit": "Position Aéro & Puissance Spécifique",
+          "aerobicTE": 3.7,
+          "anaerobicTE": 0.6,
+          "epocRange": "Élevé (90-110 ml/kg)",
+          "muscleAdaptation": "Tolérance cervicale/lombaire en position basse et écrasement continu",
+          "dominantFuel": "Mixte"
+        },
+        "steps": [
+          { "name": "Échauffement", "duration": "20 min", "zone": "Z2" },
+          { "name": "2 x 25 min allure course spécifique (R=10 min Z2)", "duration": "60 min", "zone": "Z3 Allure Course" },
+          { "name": "Retour d'endurance souple", "duration": "55 min", "zone": "Z1-Z2" }
         ]
       }
     ],
@@ -368,6 +434,29 @@
             { "name": "5 x 100m nage complète allure régulière (R=25s)", "duration": "15 min (500m)", "zone": "Z2" },
             { "name": "Retour au calme", "duration": "5 min (200m)", "zone": "Z1" }
           ]
+        },
+        {
+          "id": "swim_deb_pyramide",
+          "title": "Natation (Niveau 1) - Petite Pyramide & Battements",
+          "sport": "swimming",
+          "category": "interval",
+          "baseDurationMinutes": 45,
+          "intensity": "Aérobie Z2 avec pointes Z3",
+          "description": "Pyramide courte (50-100-150-100-50m) pour appréhender les changements d'allure sans paniquer (1300m total).",
+          "garminImpact": {
+            "primaryBenefit": "Gestion d'Allure Débutant",
+            "aerobicTE": 2.5,
+            "anaerobicTE": 0.5,
+            "epocRange": "Faible (30-45 ml/kg)",
+            "muscleAdaptation": "Coordination bras/jambes et résistance à l'effort continu",
+            "dominantFuel": "Mixte"
+          },
+          "steps": [
+            { "name": "Échauffement dos & brasse", "duration": "10 min (250m)", "zone": "Z1" },
+            { "name": "Battements de jambes avec planche", "duration": "10 min (200m)", "zone": "Z2" },
+            { "name": "Pyramide 50m - 100m - 150m - 100m - 50m (R=30s)", "duration": "18 min (450m)", "zone": "Z2-Z3" },
+            { "name": "Retour au calme libre", "duration": "7 min (200m)", "zone": "Z1" }
+          ]
         }
       ],
       "intermediaire": [
@@ -415,6 +504,29 @@
             { "name": "12 x 100m allure CSS départ fixe (R=15s)", "duration": "35 min (1200m)", "zone": "CSS" },
             { "name": "4 x 150m Pull-Buoy tempo aérobie", "duration": "10 min (600m)", "zone": "Z2" },
             { "name": "Retour au calme dos deux bras", "duration": "5 min (200m)", "zone": "Z1" }
+          ]
+        },
+        {
+          "id": "swim_int_plaquettes_force",
+          "title": "Natation (Niveau 2) - Force Spécifique Pull & Plaquettes",
+          "sport": "swimming",
+          "category": "interval",
+          "baseDurationMinutes": 60,
+          "intensity": "Z3 avec grand bras de levier",
+          "description": "Développement de la force de traction avec plaquettes moyennes et pull-buoy (2500m total).",
+          "garminImpact": {
+            "primaryBenefit": "Force Motrice du Haut du Corps",
+            "aerobicTE": 3.4,
+            "anaerobicTE": 1.5,
+            "epocRange": "Modéré-Élevé (75-95 ml/kg)",
+            "muscleAdaptation": "Fixateurs d'omoplate, deltoïdes antérieurs et pectoraux",
+            "dominantFuel": "Mixte"
+          },
+          "steps": [
+            { "name": "Échauffement complet", "duration": "10 min (400m)", "zone": "Z1" },
+            { "name": "5 x 200m Pull-Buoy + Plaquettes allure tempo (R=25s)", "duration": "25 min (1000m)", "zone": "Z3" },
+            { "name": "8 x 50m nage libre sans matériel en relançant (R=15s)", "duration": "15 min (400m)", "zone": "Z4" },
+            { "name": "Retour au calme libre", "duration": "10 min (300m)", "zone": "Z1" }
           ]
         }
       ],
@@ -464,6 +576,29 @@
             { "name": "1200m continu avec travail de navigation tête hors de l'eau", "duration": "20 min (1200m)", "zone": "Z3" },
             { "name": "Retour au calme", "duration": "5 min (400m)", "zone": "Z1" }
           ]
+        },
+        {
+          "id": "swim_av_hypoxie_tactique",
+          "title": "Natation (Niveau 3) - Hypoxie & Tolérance à l'Asphyxie",
+          "sport": "swimming",
+          "category": "interval",
+          "baseDurationMinutes": 65,
+          "intensity": "Respiration 5 et 7 temps sous stress",
+          "description": "Habituer l'organisme au manque d'oxygène lors des bousculades et vagues de départs en triathlon (3100m total).",
+          "garminImpact": {
+            "primaryBenefit": "Tolérance Hypoxique & Débit Ventilatoire",
+            "aerobicTE": 3.8,
+            "anaerobicTE": 2.9,
+            "epocRange": "Élevé (105-125 ml/kg)",
+            "muscleAdaptation": "Économie de ventilation sous stress et résistance psychologique",
+            "dominantFuel": "Glycogène"
+          },
+          "steps": [
+            { "name": "Échauffement crawl souple", "duration": "12 min (500m)", "zone": "Z1" },
+            { "name": "8 x 100m respiration 3-5-7-3 temps par 25m (R=20s)", "duration": "20 min (800m)", "zone": "Z3 Hypoxie" },
+            { "name": "3 x 500m allure tempo régulier (R=35s)", "duration": "25 min (1500m)", "zone": "Z3" },
+            { "name": "Retour au calme", "duration": "8 min (300m)", "zone": "Z1" }
+          ]
         }
       ]
     },
@@ -491,6 +626,28 @@
         ]
       },
       {
+        "id": "trail_cote_longue_seuil",
+        "title": "Trail - Montée Longue au Seuil Cardiaque (3 x 10 min D+)",
+        "sport": "trail",
+        "category": "tempo",
+        "baseDurationMinutes": 75,
+        "intensity": "Z4 Montée régulière avec bâtons si dénivelé fort",
+        "description": "Travail de soutien en côte longue pour repousser la dérive cardiaque en montée soutenue.",
+        "garminImpact": {
+          "primaryBenefit": "Seuil en Dénivelé",
+          "aerobicTE": 4.0,
+          "anaerobicTE": 2.1,
+          "epocRange": "Élevé (110-130 ml/kg)",
+          "muscleAdaptation": "Endurance des fessiers, des mollets et maintien du buste en montée",
+          "dominantFuel": "Glycogène majoritaire"
+        },
+        "steps": [
+          { "name": "Footing d'approche en montée douce", "duration": "20 min", "zone": "Z2" },
+          { "name": "3 x 10 min montée soutenue Z4 (descente en trottinant)", "duration": "40 min", "zone": "Z4 Seuil Montée" },
+          { "name": "Retour au calme facile", "duration": "15 min", "zone": "Z1" }
+        ]
+      },
+      {
         "id": "trail_long_dplus",
         "title": "Trail - Rando-Course & Dénivelé Cumulé",
         "sport": "trail",
@@ -514,7 +671,7 @@
       },
       {
         "id": "trail_descente_technique",
-        "title": "Trail - Travail Excentrique & Descentes",
+        "title": "Trail - Travail Excentrique & Descentes Techniques",
         "sport": "trail",
         "category": "technique",
         "baseDurationMinutes": 60,
@@ -533,12 +690,34 @@
           { "name": "5 répétitions descente technique rythmée (remontée marche)", "duration": "30 min", "zone": "Z3" },
           { "name": "Retour au calme", "duration": "15 min", "zone": "Z1" }
         ]
+      },
+      {
+        "id": "trail_tempo_single",
+        "title": "Trail - Relances sur Sentier Monotrace (Single Track)",
+        "sport": "trail",
+        "category": "interval",
+        "baseDurationMinutes": 65,
+        "intensity": "Z3-Z4 selon les virages et obstacles",
+        "description": "Apprendre à relancer constamment après chaque virage, racine et ressaut de sentier.",
+        "garminImpact": {
+          "primaryBenefit": "Proprioception & Vitesse Sentier",
+          "aerobicTE": 3.7,
+          "anaerobicTE": 2.5,
+          "epocRange": "Élevé (95-115 ml/kg)",
+          "muscleAdaptation": "Chevilles, stabilisateurs du genou et relance nerveuse",
+          "dominantFuel": "Glycogène"
+        },
+        "steps": [
+          { "name": "Footing d'échauffement sur piste facile", "duration": "15 min", "zone": "Z2" },
+          { "name": "4 x 6 min tempo engagé sur single track sinueux (R=2 min)", "duration": "32 min", "zone": "Z3-Z4" },
+          { "name": "Retour souple", "duration": "18 min", "zone": "Z1" }
+        ]
       }
     ],
     "brick": [
       {
         "id": "brick_transition",
-        "title": "Enchaînement Brique Vélo -> Course",
+        "title": "Enchaînement Brique Vélo -> Course à Pied T2",
         "sport": "triathlon",
         "category": "brick",
         "baseDurationMinutes": 90,
@@ -556,6 +735,31 @@
           { "name": "Vélo tempo aérobie Z2/Z3", "duration": "60 min", "zone": "Z2-Z3" },
           { "name": "Transition rapide T2 (<2 min)", "duration": "2 min", "zone": "T2" },
           { "name": "Course à pied immédiate allure cible", "duration": "28 min", "zone": "Z3" }
+        ]
+      },
+      {
+        "id": "brick_courte_dynamique",
+        "title": "Multi-Enchaînements Courts (2x Vélo 20' + Course 10')",
+        "sport": "triathlon",
+        "category": "brick",
+        "baseDurationMinutes": 70,
+        "intensity": "Z4 Rythme Course Sprint/Olympique",
+        "description": "Répéter l'adaptation de transition à deux reprises dans la même séance pour habituer le système nerveux.",
+        "garminImpact": {
+          "primaryBenefit": "Agilité Neuromusculaire Répétée",
+          "aerobicTE": 3.9,
+          "anaerobicTE": 2.6,
+          "epocRange": "Très Élevé (110-130 ml/kg)",
+          "muscleAdaptation": "Tolérance neuromusculaire aux chocs de course avec jambes lourdes",
+          "dominantFuel": "Glycogène"
+        },
+        "steps": [
+          { "name": "Bloc 1 : Vélo tonique Z3/Z4", "duration": "20 min", "zone": "Z3" },
+          { "name": "Bloc 1 : Course immédiate allure 5k/10k", "duration": "10 min", "zone": "Z4" },
+          { "name": "Pause boisson active", "duration": "5 min", "zone": "Z1" },
+          { "name": "Bloc 2 : Vélo tonique Z3/Z4", "duration": "20 min", "zone": "Z3" },
+          { "name": "Bloc 2 : Course rapide allure spécifique", "duration": "10 min", "zone": "Z4" },
+          { "name": "Retour au calme trot très lent", "duration": "5 min", "zone": "Z1" }
         ]
       }
     ]
