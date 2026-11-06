@@ -13,8 +13,7 @@ import {
   Target, 
   Zap, 
   Clock, 
-  Compass, 
-  HelpCircle 
+  Compass 
 } from 'lucide-react';
 
 export default function GeneratorForm({ onPlanGenerated }) {
@@ -25,7 +24,7 @@ export default function GeneratorForm({ onPlanGenerated }) {
   const [selectedDistance, setSelectedDistance] = useState(profile.currentDistance || 'marathon');
   const [daysPerWeek, setDaysPerWeek] = useState(profile.daysPerWeek || 4);
   const [hasPowerMeter, setHasPowerMeter] = useState(profile.hasPowerMeter || false);
-  const [targetTime, setTargetTime] = useState(profile.targetTime || DEFAULT_TARGET_TIMES['marathon'] || '03:30:00');
+  const [targetTime, setTargetTime] = useState(profile.targetTime || '');
 
   const availableDistances = disciplines[selectedDiscipline]?.distances || {};
 
@@ -33,32 +32,34 @@ export default function GeneratorForm({ onPlanGenerated }) {
     setSelectedDiscipline(key);
     const firstDistance = Object.keys(disciplines[key].distances)[0];
     setSelectedDistance(firstDistance);
-    setTargetTime(DEFAULT_TARGET_TIMES[firstDistance] || '01:00:00');
   };
 
   const handleDistanceChange = (distKey) => {
     setSelectedDistance(distKey);
-    setTargetTime(DEFAULT_TARGET_TIMES[distKey] || '01:00:00');
   };
 
   // Required pace calculation preview
-  const pacePreview = calculateRequiredPace(selectedDistance, targetTime);
+  const defaultDistanceTime = DEFAULT_TARGET_TIMES[selectedDistance] || '03:30:00';
+  const effectiveTargetForCalculation = targetTime.trim() !== '' ? targetTime : defaultDistanceTime;
+  const pacePreview = calculateRequiredPace(selectedDistance, effectiveTargetForCalculation);
 
   const handleGenerate = (e) => {
     e.preventDefault();
+    const finalTargetTime = targetTime.trim() !== '' ? targetTime : defaultDistanceTime;
+
     updateProfile({
       currentDiscipline: selectedDiscipline,
       currentDistance: selectedDistance,
       daysPerWeek,
       hasPowerMeter,
-      targetTime
+      targetTime: finalTargetTime
     });
 
     const newPlan = generateTrainingPlan({
       disciplineKey: selectedDiscipline,
       distanceKey: selectedDistance,
       daysPerWeek,
-      targetTime,
+      targetTime: finalTargetTime,
       userProfile: {
         ...profile,
         hasPowerMeter
@@ -159,25 +160,27 @@ export default function GeneratorForm({ onPlanGenerated }) {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
               <div>
                 <label className="block text-[11px] text-slate-500 font-mono mb-1">
-                  Format HH:MM:SS (ex: 03:30:00 pour Marathon)
+                  Format HH:MM:SS
                 </label>
                 <input
                   type="text"
                   value={targetTime}
                   onChange={(e) => setTargetTime(e.target.value)}
-                  className="w-full bg-white border border-slate-300 rounded-md px-3 py-2 text-sm font-mono font-bold text-slate-900 focus:outline-none focus:border-slate-700"
-                  placeholder="03:30:00"
+                  className="w-full bg-white border border-slate-300 rounded-md px-3 py-2 text-sm font-mono font-bold text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-700"
+                  placeholder={`Ex: ${defaultDistanceTime}`}
                 />
               </div>
 
               {pacePreview && (
                 <div className="p-3 bg-white border border-slate-200 rounded-md text-xs font-mono">
-                  <div className="text-slate-400 text-[10px] uppercase font-semibold">Allure Requise calculée par le Coach</div>
+                  <div className="text-slate-400 text-[10px] uppercase font-semibold">
+                    Allure Requise {targetTime.trim() === '' ? '(Aperçu indicatif)' : 'calculée'}
+                  </div>
                   <div className="text-slate-900 font-bold text-sm mt-0.5">
                     {pacePreview.formattedPace} ({pacePreview.speedKmh} km/h)
                   </div>
                   <div className="text-[11px] text-slate-500 mt-0.5">
-                    Les séances d'allure spécifique seront calibrées exactement sur ce tempo.
+                    {targetTime.trim() === '' ? `Entrez votre chrono ou laissez vide pour viser ~${defaultDistanceTime}` : 'Vos séances spécifiques seront calibrées exactement sur cette allure.'}
                   </div>
                 </div>
               )}
@@ -265,7 +268,7 @@ export default function GeneratorForm({ onPlanGenerated }) {
           {/* Submit */}
           <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="text-xs text-slate-500 font-mono">
-              Athlète : <strong>{profile.name}</strong> · Objectif : <span className="font-bold text-slate-900">{targetTime}</span>
+              Athlète : <strong>{profile.name || 'Athlète'}</strong> · Objectif : <span className="font-bold text-slate-900">{targetTime || `~${defaultDistanceTime}`}</span>
             </div>
 
             <button

@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { useProfile } from '../context/ProfileContext';
-import { Lock, Mail, ArrowRight, ShieldCheck, UserPlus, LogIn, Activity } from 'lucide-react';
+import { Lock, Mail, ArrowRight, ShieldCheck } from 'lucide-react';
 
 export default function AuthScreen() {
   const { login } = useProfile();
   const [isRegister, setIsRegister] = useState(false);
-  const [email, setEmail] = useState('alex.renard@endurance.io');
-  const [password, setPassword] = useState('password123');
-  const [name, setName] = useState('Alexandre Renard');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
   const [error, setError] = useState('');
 
   const handleSubmit = (e) => {
@@ -17,7 +17,7 @@ export default function AuthScreen() {
       return;
     }
 
-    login(email, password);
+    login(email, password, isRegister ? name : undefined);
   };
 
   return (
@@ -39,7 +39,7 @@ export default function AuthScreen() {
           <div className="flex border-b border-slate-200 mb-6">
             <button
               type="button"
-              onClick={() => setIsRegister(false)}
+              onClick={() => { setIsRegister(false); setError(''); }}
               className={`flex-1 pb-3 text-xs font-semibold text-center border-b-2 cursor-pointer transition-colors ${
                 !isRegister
                   ? 'border-slate-900 text-slate-900'
@@ -50,7 +50,7 @@ export default function AuthScreen() {
             </button>
             <button
               type="button"
-              onClick={() => setIsRegister(true)}
+              onClick={() => { setIsRegister(true); setError(''); }}
               className={`flex-1 pb-3 text-xs font-semibold text-center border-b-2 cursor-pointer transition-colors ${
                 isRegister
                   ? 'border-slate-900 text-slate-900'
@@ -71,9 +71,9 @@ export default function AuthScreen() {
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Alexandre Renard"
+                  placeholder="Ex: Alexandre Renard"
                   className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-slate-500 font-mono"
-                  required
+                  required={isRegister}
                 />
               </div>
             )}
@@ -87,7 +87,7 @@ export default function AuthScreen() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="alex.renard@endurance.io"
+                  placeholder="exemple@endurance.io"
                   className="w-full text-xs p-2.5 pl-8 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-slate-500 font-mono"
                   required
                 />

@@ -4,18 +4,18 @@ import { saveAthleteProfile, fetchAthleteProfile } from '../services/api';
 const ProfileContext = createContext(null);
 
 const DEFAULT_PROFILE = {
-  name: 'Alexandre Renard',
-  email: 'alex.renard@endurance.io',
+  name: '',
+  email: '',
   level: 'Intermédiaire',
   hasPowerMeter: false,
-  vma: '16.0',
-  ftp: '250',
-  fcMax: '185',
-  fcRepos: '48',
+  vma: '',          // empty by default with placeholder
+  ftp: '',          // empty by default with placeholder
+  fcMax: '',        // empty by default with placeholder
+  fcRepos: '',
   weeklyHoursLimit: '10',
   currentDiscipline: 'running',
   currentDistance: 'marathon',
-  targetTime: '03:30:00',
+  targetTime: '',   // empty by default with placeholder
   daysPerWeek: 4
 };
 
@@ -54,16 +54,17 @@ export function ProfileProvider({ children }) {
     setProfile(prev => ({ ...prev, ...fields }));
   };
 
-  const login = (email, password) => {
-    // In production, this calls backend /api/auth/login with JWT
+  const login = (email, password, athleteName) => {
+    const finalName = athleteName || (profile.name ? profile.name : email.split('@')[0]);
     const authenticatedUser = {
       id: 'usr_' + Date.now(),
       email,
-      name: email.split('@')[0],
+      name: finalName,
       token: 'jwt_mock_' + Math.random().toString(36).substring(2)
     };
     setUser(authenticatedUser);
     localStorage.setItem(AUTH_KEY, JSON.stringify(authenticatedUser));
+    updateProfile({ email, name: finalName });
     return { success: true };
   };
 
