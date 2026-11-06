@@ -1,8 +1,8 @@
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const API_BASE = import.meta.env.VITE_API_URL || 'https://pulseplan-api.onrender.com/api';
 
 export async function checkBackendHealth() {
   try {
-    const res = await fetch(`${API_BASE}/health`, { signal: AbortSignal.timeout(1500) });
+    const res = await fetch(`${API_BASE}/health`, { signal: AbortSignal.timeout(3000) });
     if (res.ok) {
       const data = await res.json();
       return { online: true, data };
@@ -15,7 +15,7 @@ export async function checkBackendHealth() {
 
 export async function fetchAthleteProfile() {
   try {
-    const res = await fetch(`${API_BASE}/profile`, { signal: AbortSignal.timeout(1500) });
+    const res = await fetch(`${API_BASE}/profile`, { signal: AbortSignal.timeout(3000) });
     if (res.ok) return await res.json();
   } catch (e) {
     console.warn('Backend unavailable, using local fallback');
@@ -29,7 +29,7 @@ export async function saveAthleteProfile(profile) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(profile),
-      signal: AbortSignal.timeout(1500)
+      signal: AbortSignal.timeout(3000)
     });
     if (res.ok) return await res.json();
   } catch (e) {
@@ -44,7 +44,7 @@ export async function pushPlanToWatchApi(plan) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ plan }),
-      signal: AbortSignal.timeout(2000)
+      signal: AbortSignal.timeout(3500)
     });
     if (res.ok) return await res.json();
   } catch (e) {
