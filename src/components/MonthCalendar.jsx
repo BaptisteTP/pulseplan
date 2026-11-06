@@ -13,7 +13,8 @@ import {
   Mountain,
   Activity,
   Compass,
-  ArrowRightLeft
+  ArrowRightLeft,
+  GripVertical
 } from 'lucide-react';
 import { exportWorkoutToFitJson } from '../services/exportService';
 
@@ -56,6 +57,11 @@ export default function MonthCalendar({ plan, userProfile, onPlanUpdated }) {
   const [currentMonthDate, setCurrentMonthDate] = useState(new Date(planStart));
   const [selectedSessionModal, setSelectedSessionModal] = useState(null);
   const [showMovePicker, setShowMovePicker] = useState(false);
+  
+  // Drag & drop state for Month Calendar
+  const [draggedCellKey, setDraggedCellKey] = useState(null);
+  const [dragOverCellKey, setDragOverCellKey] = useState(null);
+  const [moveNotice, setMoveNotice] = useState(null);
 
   const year = currentMonthDate.getFullYear();
   const month = currentMonthDate.getMonth();
@@ -173,16 +179,17 @@ export default function MonthCalendar({ plan, userProfile, onPlanUpdated }) {
     }
   });
 
-  // Move workout within the week from the calendar modal
-  const handleMoveSessionToDay = (targetDayIndex) => {
-    if (!selectedSessionModal || !onPlanUpdated) return;
+  // Swap / Move workout between two dates/cells across the plan
+  const swapWorkoutBetweenEntries = (sourceEntry, targetEntry) => {
+    if (!sourceEntry || !targetEntry || !onPlanUpdated) return;
 
     const updatedPlan = JSON.parse(JSON.stringify(plan));
-    const week = updatedPlan.weeks[selectedSessionModal.weekIndex];
-    if (!week) return;
+    const sourceWeek = updatedPlan.weeks[sourceEntry.weekIndex];
+    const targetWeek = updatedPlan.weeks[targetEntry.weekIndex];
+    if (!sourceWeek || !targetWeek) return;
 
-    const sourceDay = week.days[selectedSessionModal.dayItem.dayIndex];
-    const targetDay = week.days[targetDayIndex];
+    const sourceDay = sourceWeek.days[sourceEntry.dayItem.dayIndex];
+    const targetDay = targetWeek.days[targetEntry.dayItem.dayIndex];
 
     const tempWorkout = sourceDay.workout;
     const tempIsRest = sourceDay.isRest;
@@ -193,16 +200,95 @@ export default function MonthCalendar({ plan, userProfile, onPlanUpdated }) {
     targetDay.workout = tempWorkout;
     targetDay.isRest = tempIsRest;
 
-    week.totalDurationMinutes = week.days.reduce((acc, d) => acc + (d.workout?.durationMinutes || 0), 0);
-    week.estimatedTSS = week.days.reduce((acc, d) => acc + (d.workout?.estimatedTSS || 0), 0);
+    // Recalculate weeks totals
+    sourceWeek.totalDurationMinutes = sourceWeek.days.reduce((acc, d) => acc + (d.workout?.durationMinutes || 0), 0);
+    sourceWeek.estimatedTSS = sourceWeek.days.reduce((acc, d) => acc + (d.workout?.estimatedTSS || 0), 0);
+
+    if (sourceWeek !== targetWeek) {
+      targetWeek.totalDurationMinutes = targetWeek.days.reduce((acc, d) => acc + (d.workout?.durationMinutes || 0), 0);
+      targetWeek.estimatedTSS = targetWeek.days.reduce((acc, d) => acc + (d.workout?.estimatedTSS || 0), 0);
+    }
 
     onPlanUpdated(updatedPlan);
+
+    const sDateStr = sourceEntry.date.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
+    const tDateStr = targetEntry.date.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
+    setMoveNotice(`Séance déplacée du ${sDateStr} vers le ${tDateStr}`);
+    setTimeout(() => setMoveNotice(null), 3500);
+  };
+
+  // Move workout within the week from the calendar modal
+  const handleMoveSessionToDay = (targetDayIndex) => {
+    if (!selectedSessionModal || !onPlanUpdated) return;
+
+    const sourceEntry = selectedSessionModal;
+    const targetEntry = {
+      weekIndex: sourceEntry.weekIndex,
+      dayItem: { dayIndex: targetDayIndex },
+      date: new Date(sourceEntry.date)
+    };
+    targetEntry.date.setDate(sourceEntry.date.getDate() + (targetDayIndex - sourceEntry.dayItem.dayIndex));
+
+    swapWorkoutBetweenEntries(sourceEntry, targetEntry);
     setShowMovePicker(false);
     setSelectedSessionModal(null);
   };
 
+  // Drag and drop handlers
+  const handleDragStart = (e, dateKey) => {
+    const entry = workoutDateMap[dateKey];
+    if (!entry || !entry.dayItem.workout) return;
+    setDraggedCellKey(dateKey);
+    e.dataTransfer.setData('text/plain', dateKey);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e, dateKey) => {
+    e.preventDefault();
+    if (workoutDateMap[dateKey]) {
+      e.dataTransfer.dropEffect = 'move';
+      if (dragOverCellKey !== dateKey) {
+        setDragOverCellKey(dateKey);
+      }
+    }
+  };
+
+  const handleDragLeave = (dateKey) => {
+    if (dragOverCellKey === dateKey) {
+      setDragOverCellKey(null);
+    }
+  };
+
+  const handleDrop = (e, targetDateKey) => {
+    e.preventDefault();
+    setDragOverCellKey(null);
+    const sourceDateKey = draggedCellKey || e.dataTransfer.getData('text/plain');
+
+    if (!sourceDateKey || sourceDateKey === targetDateKey) {
+      setDraggedCellKey(null);
+      return;
+    }
+
+    const sourceEntry = workoutDateMap[sourceDateKey];
+    const targetEntry = workoutDateMap[targetDateKey];
+
+    if (sourceEntry && targetEntry) {
+      swapWorkoutBetweenEntries(sourceEntry, targetEntry);
+    }
+
+    setDraggedCellKey(null);
+  };
+
   return (
     <div className="space-y-3 sm:space-y-4">
+      {/* Toast Notice when session is moved */}
+      {moveNotice && (
+        <div className="fixed top-4 right-4 z-50 bg-slate-900 text-white text-xs font-mono py-2.5 px-4 rounded-xl shadow-lg border border-slate-700 animate-in fade-in slide-in-from-top-2 flex items-center gap-2">
+          <ArrowRightLeft className="w-3.5 h-3.5 text-emerald-400" />
+          <span>{moveNotice}</span>
+        </div>
+      )}
+
       {/* Month Header & Controls */}
       <div className="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center justify-between sm:justify-start gap-2">
@@ -266,13 +352,20 @@ export default function MonthCalendar({ plan, userProfile, onPlanUpdated }) {
             const planEntry = workoutDateMap[cell.dateKey];
             const workout = planEntry?.dayItem?.workout;
             const isToday = isSameDay(cell.date, new Date());
+            const isDraggingThis = draggedCellKey === cell.dateKey;
+            const isDragOverThis = dragOverCellKey === cell.dateKey;
 
             return (
               <div
                 key={cell.dateKey}
-                className={`min-h-[75px] sm:min-h-[120px] p-1 sm:p-1.5 flex flex-col justify-between transition-colors ${
+                onDragOver={(e) => handleDragOver(e, cell.dateKey)}
+                onDragLeave={() => handleDragLeave(cell.dateKey)}
+                onDrop={(e) => handleDrop(e, cell.dateKey)}
+                className={`min-h-[80px] sm:min-h-[120px] p-1 sm:p-1.5 flex flex-col justify-between transition-all ${
                   cell.isCurrentMonth ? 'bg-white' : 'bg-slate-50/50 text-slate-300'
-                } ${isToday ? 'ring-2 ring-inset ring-slate-900 bg-slate-50/60' : ''}`}
+                } ${isToday ? 'ring-2 ring-inset ring-slate-900 bg-slate-50/60' : ''} ${
+                  isDragOverThis ? 'bg-sky-50 ring-2 ring-inset ring-sky-500 scale-[0.99]' : ''
+                } ${isDraggingThis ? 'opacity-40' : ''}`}
               >
                 <div className="flex items-center justify-between">
                   <span
@@ -300,31 +393,40 @@ export default function MonthCalendar({ plan, userProfile, onPlanUpdated }) {
                       const sportBadge = getSportBadge(workout.sport, workout.category);
                       const garmin = workout.garminImpact;
                       return (
-                        <button
-                          onClick={() => {
-                            setSelectedSessionModal({ ...planEntry, workout });
-                            setShowMovePicker(false);
-                          }}
-                          className={`w-full text-left p-1 sm:p-1.5 rounded border transition-all text-xs cursor-pointer active:scale-95 ${sportBadge.chip}`}
+                        <div
+                          draggable
+                          onDragStart={(e) => handleDragStart(e, cell.dateKey)}
+                          className="group relative cursor-grab active:cursor-grabbing"
                         >
-                          <div className="flex items-center gap-1 font-semibold text-[10px] sm:text-[11px] leading-tight line-clamp-1">
-                            <span className={`w-1.5 h-1.5 rounded-full ${sportBadge.dot} shrink-0`}></span>
-                            <span className="truncate">{workout.title}</span>
-                          </div>
-                          
-                          <div className="mt-0.5 sm:mt-1 flex items-center justify-between text-[9px] sm:text-[10px] font-mono opacity-85">
-                            <span>{workout.durationMinutes}m</span>
-                            {garmin ? (
-                              <span className="hidden sm:inline-block text-[9px] font-medium bg-white/70 px-1 rounded border border-black/5">
-                                TE {garmin.aerobicTE}
-                              </span>
-                            ) : null}
-                          </div>
-                        </button>
+                          <button
+                            onClick={() => {
+                              setSelectedSessionModal({ ...planEntry, workout });
+                              setShowMovePicker(false);
+                            }}
+                            className={`w-full text-left p-1 sm:p-1.5 rounded border transition-all text-xs active:scale-95 ${sportBadge.chip}`}
+                          >
+                            <div className="flex items-center justify-between gap-1">
+                              <div className="flex items-center gap-1 font-semibold text-[10px] sm:text-[11px] leading-tight line-clamp-1">
+                                <span className={`w-1.5 h-1.5 rounded-full ${sportBadge.dot} shrink-0`}></span>
+                                <span className="truncate">{workout.title}</span>
+                              </div>
+                              <GripVertical className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity hidden sm:block shrink-0" />
+                            </div>
+                            
+                            <div className="mt-0.5 sm:mt-1 flex items-center justify-between text-[9px] sm:text-[10px] font-mono opacity-85">
+                              <span>{workout.durationMinutes}m</span>
+                              {garmin ? (
+                                <span className="hidden sm:inline-block text-[9px] font-medium bg-white/70 px-1 rounded border border-black/5">
+                                  TE {garmin.aerobicTE}
+                                </span>
+                              ) : null}
+                            </div>
+                          </button>
+                        </div>
                       );
                     })()
                   ) : planEntry && !planEntry.dayItem.isRest ? null : planEntry ? (
-                    <div className="text-[9px] sm:text-[10px] text-slate-400 font-mono text-center py-1 sm:py-2">
+                    <div className="text-[9px] sm:text-[10px] text-slate-400 font-mono text-center py-1 sm:py-2 select-none">
                       Repos
                     </div>
                   ) : null}
