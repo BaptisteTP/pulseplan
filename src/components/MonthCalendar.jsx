@@ -181,7 +181,7 @@ export default function MonthCalendar({ plan, userProfile, onPlanUpdated }) {
 
   // Swap / Move workout between two dates/cells across the plan
   const swapWorkoutBetweenEntries = (sourceEntry, targetEntry) => {
-    if (!sourceEntry || !targetEntry || !onPlanUpdated) return;
+    if (!sourceEntry || !targetEntry) return;
 
     const updatedPlan = JSON.parse(JSON.stringify(plan));
     const sourceWeek = updatedPlan.weeks[sourceEntry.weekIndex];
@@ -209,7 +209,9 @@ export default function MonthCalendar({ plan, userProfile, onPlanUpdated }) {
       targetWeek.estimatedTSS = targetWeek.days.reduce((acc, d) => acc + (d.workout?.estimatedTSS || 0), 0);
     }
 
-    onPlanUpdated(updatedPlan);
+    if (typeof onPlanUpdated === 'function') {
+      onPlanUpdated(updatedPlan);
+    }
 
     const sDateStr = sourceEntry.date.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
     const tDateStr = targetEntry.date.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
@@ -219,15 +221,18 @@ export default function MonthCalendar({ plan, userProfile, onPlanUpdated }) {
 
   // Move workout within the week from the calendar modal
   const handleMoveSessionToDay = (targetDayIndex) => {
-    if (!selectedSessionModal || !onPlanUpdated) return;
+    if (!selectedSessionModal) return;
 
     const sourceEntry = selectedSessionModal;
+    const targetDate = new Date(sourceEntry.date);
+    targetDate.setDate(sourceEntry.date.getDate() + (targetDayIndex - sourceEntry.dayItem.dayIndex));
+
     const targetEntry = {
       weekIndex: sourceEntry.weekIndex,
+      weekNumber: sourceEntry.weekNumber,
       dayItem: { dayIndex: targetDayIndex },
-      date: new Date(sourceEntry.date)
+      date: targetDate
     };
-    targetEntry.date.setDate(sourceEntry.date.getDate() + (targetDayIndex - sourceEntry.dayItem.dayIndex));
 
     swapWorkoutBetweenEntries(sourceEntry, targetEntry);
     setShowMovePicker(false);
@@ -463,47 +468,57 @@ export default function MonthCalendar({ plan, userProfile, onPlanUpdated }) {
             </h3>
 
             {/* Quick Move Trigger inside Modal */}
-            <div className="mt-3 p-2.5 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-between">
-              <span className="text-xs text-slate-600 flex items-center gap-1.5 font-medium">
-                <ArrowRightLeft className="w-3.5 h-3.5 text-slate-500" />
-                <span>Déplacer cette séance dans la semaine</span>
-              </span>
+            <div className="mt-3 p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-slate-700 flex items-center gap-1.5 font-semibold">
+                  <ArrowRightLeft className="w-4 h-4 text-sky-600" />
+                  <span>Déplacer cette séance</span>
+                </span>
 
-              <button
-                type="button"
-                onClick={() => setShowMovePicker(!showMovePicker)}
-                className="px-2.5 py-1 bg-white hover:bg-slate-100 border border-slate-200 rounded text-xs font-semibold text-slate-800 transition-colors cursor-pointer"
-              >
-                {showMovePicker ? 'Fermer' : 'Choisir un jour'}
-              </button>
-            </div>
-
-            {/* Day Picker */}
-            {showMovePicker && plan.weeks[selectedSessionModal.weekIndex] && (
-              <div className="mt-2 p-2 bg-slate-100/70 border border-slate-200 rounded-lg grid grid-cols-2 sm:grid-cols-4 gap-1.5 animate-in fade-in">
-                {plan.weeks[selectedSessionModal.weekIndex].days.map((d) => {
-                  const isCurrentDay = d.dayIndex === selectedSessionModal.dayItem.dayIndex;
-                  return (
-                    <button
-                      key={d.dayIndex}
-                      type="button"
-                      disabled={isCurrentDay}
-                      onClick={() => handleMoveSessionToDay(d.dayIndex)}
-                      className={`p-2 rounded border text-left text-xs transition-colors cursor-pointer ${
-                        isCurrentDay
-                          ? 'opacity-40 bg-slate-200 border-slate-300 text-slate-500 cursor-not-allowed'
-                          : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-800 font-medium active:bg-slate-100'
-                      }`}
-                    >
-                      <div className="font-bold">{d.dayName}</div>
-                      <div className="text-[10px] text-slate-400 font-mono">
-                        {d.isRest ? 'Repos' : d.workout?.title.substring(0, 8) + '...'}
-                      </div>
-                    </button>
-                  );
-                })}
+                <button
+                  type="button"
+                  onClick={() => setShowMovePicker(!showMovePicker)}
+                  className="px-3 py-1.5 bg-white hover:bg-slate-100 border border-slate-300 rounded-lg text-xs font-bold text-slate-800 transition-colors shadow-2xs active:bg-slate-200"
+                >
+                  {showMovePicker ? 'Annuler' : 'Changer de jour'}
+                </button>
               </div>
-            )}
+
+              {/* Day Picker with large touch targets for mobile */}
+              {showMovePicker && plan.weeks[selectedSessionModal.weekIndex] && (
+                <div className="pt-2 border-t border-slate-200/80 animate-in fade-in">
+                  <div className="text-[11px] text-slate-500 font-medium mb-1.5">
+                    Sélectionnez le jour de destination dans la Semaine {selectedSessionModal.weekNumber} :
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {plan.weeks[selectedSessionModal.weekIndex].days.map((d) => {
+                      const isCurrentDay = d.dayIndex === selectedSessionModal.dayItem.dayIndex;
+                      return (
+                        <button
+                          key={d.dayIndex}
+                          type="button"
+                          disabled={isCurrentDay}
+                          onClick={() => handleMoveSessionToDay(d.dayIndex)}
+                          className={`p-2.5 rounded-lg border text-left text-xs transition-all active:scale-95 ${
+                            isCurrentDay
+                              ? 'opacity-40 bg-slate-200 border-slate-300 text-slate-500 cursor-not-allowed'
+                              : 'bg-white hover:bg-sky-50 hover:border-sky-300 border-slate-200 text-slate-900 font-semibold shadow-2xs'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold">{d.dayName}</span>
+                            {isCurrentDay && <span className="text-[9px] font-mono uppercase text-slate-400">Actuel</span>}
+                          </div>
+                          <div className="text-[10px] text-slate-500 font-mono mt-0.5 truncate">
+                            {d.isRest ? '🌿 Repos' : `⚡ ${d.workout?.title.substring(0, 10)}...`}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Metrics ribbon */}
             <div className="mt-3 flex items-center gap-3 py-2 px-3 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono">

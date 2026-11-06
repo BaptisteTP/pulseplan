@@ -138,11 +138,12 @@ export default function App() {
         </header>
 
         {/* Tab views */}
-        <main className="flex-1 p-3 sm:p-6 max-w-7xl w-full mx-auto">
+        <main className="flex-1 p-2 sm:p-6 pb-24 md:pb-6 max-w-7xl w-full mx-auto">
           {activeTab === 'calendar' && (
             <MonthCalendar 
               plan={currentPlan} 
               userProfile={profile} 
+              onPlanUpdated={handlePlanUpdated}
             />
           )}
 
@@ -178,55 +179,55 @@ export default function App() {
         </main>
       </div>
 
-      {/* iOS Native Bottom Bar */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex items-center justify-around py-2 px-1 z-30 shadow-lg">
+      {/* iOS Native Bottom Bar with safe area padding */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 flex items-center justify-around py-2.5 px-2 pb-[max(0.65rem,env(safe-area-inset-bottom))] z-40 shadow-lg">
         <button
           onClick={() => setActiveTab('calendar')}
-          className={`flex flex-col items-center gap-1 text-[10px] font-medium transition-colors ${
+          className={`flex flex-col items-center gap-1 min-w-[50px] py-1 text-[10px] font-medium transition-colors cursor-pointer active:scale-95 ${
             activeTab === 'calendar' ? 'text-slate-900 font-bold' : 'text-slate-400'
           }`}
         >
-          <CalendarIcon className="w-4 h-4" />
+          <CalendarIcon className={`w-5 h-5 ${activeTab === 'calendar' ? 'stroke-[2.5]' : ''}`} />
           <span>Mois</span>
         </button>
 
         <button
           onClick={() => setActiveTab('dashboard')}
-          className={`flex flex-col items-center gap-1 text-[10px] font-medium transition-colors ${
+          className={`flex flex-col items-center gap-1 min-w-[50px] py-1 text-[10px] font-medium transition-colors cursor-pointer active:scale-95 ${
             activeTab === 'dashboard' ? 'text-slate-900 font-bold' : 'text-slate-400'
           }`}
         >
-          <LayoutGrid className="w-4 h-4" />
+          <LayoutGrid className={`w-5 h-5 ${activeTab === 'dashboard' ? 'stroke-[2.5]' : ''}`} />
           <span>Semaine</span>
         </button>
 
         <button
           onClick={() => setActiveTab('sync')}
-          className={`flex flex-col items-center gap-1 text-[10px] font-medium transition-colors ${
+          className={`flex flex-col items-center gap-1 min-w-[50px] py-1 text-[10px] font-medium transition-colors cursor-pointer active:scale-95 ${
             activeTab === 'sync' ? 'text-slate-900 font-bold' : 'text-slate-400'
           }`}
         >
-          <Wifi className="w-4 h-4" />
+          <Wifi className={`w-5 h-5 ${activeTab === 'sync' ? 'stroke-[2.5]' : ''}`} />
           <span>Montre</span>
         </button>
 
         <button
           onClick={() => setActiveTab('generator')}
-          className={`flex flex-col items-center gap-1 text-[10px] font-medium transition-colors ${
+          className={`flex flex-col items-center gap-1 min-w-[50px] py-1 text-[10px] font-medium transition-colors cursor-pointer active:scale-95 ${
             activeTab === 'generator' ? 'text-slate-900 font-bold' : 'text-slate-400'
           }`}
         >
-          <Sliders className="w-4 h-4" />
+          <Sliders className={`w-5 h-5 ${activeTab === 'generator' ? 'stroke-[2.5]' : ''}`} />
           <span>Générateur</span>
         </button>
 
         <button
           onClick={() => setActiveTab('profile')}
-          className={`flex flex-col items-center gap-1 text-[10px] font-medium transition-colors ${
+          className={`flex flex-col items-center gap-1 min-w-[50px] py-1 text-[10px] font-medium transition-colors cursor-pointer active:scale-95 ${
             activeTab === 'profile' ? 'text-slate-900 font-bold' : 'text-slate-400'
           }`}
         >
-          <User className="w-4 h-4" />
+          <User className={`w-5 h-5 ${activeTab === 'profile' ? 'stroke-[2.5]' : ''}`} />
           <span>Profil</span>
         </button>
       </div>
