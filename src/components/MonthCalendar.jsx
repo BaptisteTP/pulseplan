@@ -21,7 +21,8 @@ const MONTH_NAMES = [
   'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
 ];
 
-const WEEKDAY_NAMES = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+const WEEKDAY_NAMES_SHORT = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
+const WEEKDAY_NAMES_LONG = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 
 export default function MonthCalendar({ plan, userProfile }) {
   const startDate = new Date();
@@ -170,27 +171,27 @@ export default function MonthCalendar({ plan, userProfile }) {
   });
 
   return (
-    <div className="space-y-4">
-      {/* Month Header & Controls */}
-      <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center rounded-md border border-slate-200 shadow-2xs overflow-hidden">
+    <div className="space-y-3 sm:space-y-4">
+      {/* Month Header & Controls - Mobile Touch Optimized */}
+      <div className="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center justify-between sm:justify-start gap-2">
+          <div className="flex items-center rounded-lg border border-slate-200 shadow-2xs overflow-hidden">
             <button
               onClick={handlePrevMonth}
-              className="p-1.5 bg-white hover:bg-slate-50 text-slate-700 border-r border-slate-200 cursor-pointer"
+              className="p-2 sm:p-1.5 bg-white hover:bg-slate-50 text-slate-700 border-r border-slate-200 active:bg-slate-100"
               title="Mois précédent"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
             <button
               onClick={handleTodayMonth}
-              className="px-3 py-1.5 bg-white hover:bg-slate-50 text-xs font-medium text-slate-700 cursor-pointer"
+              className="px-3 py-2 sm:py-1.5 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 active:bg-slate-100"
             >
               Aujourd'hui
             </button>
             <button
               onClick={handleNextMonth}
-              className="p-1.5 bg-white hover:bg-slate-50 text-slate-700 border-l border-slate-200 cursor-pointer"
+              className="p-2 sm:p-1.5 bg-white hover:bg-slate-50 text-slate-700 border-l border-slate-200 active:bg-slate-100"
               title="Mois suivant"
             >
               <ChevronRight className="w-4 h-4" />
@@ -202,32 +203,35 @@ export default function MonthCalendar({ plan, userProfile }) {
           </h2>
         </div>
 
-        <div className="flex items-center gap-5 text-xs font-mono">
+        <div className="flex items-center justify-between sm:justify-end gap-4 text-xs font-mono border-t sm:border-t-0 border-slate-100 pt-2 sm:pt-0">
           <div>
-            <span className="text-slate-400 uppercase text-[10px] block">Séances</span>
-            <span className="text-slate-800 font-bold text-sm">{monthWorkoutsCount}</span>
+            <span className="text-slate-400 uppercase text-[9px] block">Séances</span>
+            <span className="text-slate-900 font-bold text-xs sm:text-sm">{monthWorkoutsCount}</span>
           </div>
-          <div className="border-l border-slate-200 pl-5">
-            <span className="text-slate-400 uppercase text-[10px] block">Volume</span>
-            <span className="text-slate-800 font-bold text-sm">{Math.floor(monthTotalDuration / 60)}h{monthTotalDuration % 60}m</span>
+          <div className="border-l border-slate-200 pl-4">
+            <span className="text-slate-400 uppercase text-[9px] block">Volume</span>
+            <span className="text-slate-900 font-bold text-xs sm:text-sm">{Math.floor(monthTotalDuration / 60)}h{monthTotalDuration % 60}m</span>
           </div>
-          <div className="border-l border-slate-200 pl-5">
-            <span className="text-slate-400 uppercase text-[10px] block">Charge TSS</span>
-            <span className="text-slate-800 font-bold text-sm">{monthTotalTSS}</span>
+          <div className="border-l border-slate-200 pl-4">
+            <span className="text-slate-400 uppercase text-[9px] block">TSS</span>
+            <span className="text-slate-900 font-bold text-xs sm:text-sm">{monthTotalTSS}</span>
           </div>
         </div>
       </div>
 
       {/* Calendar Grid Container */}
-      <div className="bg-white border border-slate-200 rounded-lg shadow-xs overflow-hidden">
-        <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-50 text-center py-2 text-xs font-mono font-semibold text-slate-600">
-          {WEEKDAY_NAMES.map((name, i) => (
-            <div key={name} className={i >= 5 ? 'text-slate-800 font-bold' : ''}>
-              {name}
+      <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
+        {/* Days of week header */}
+        <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-50 text-center py-2 text-[11px] sm:text-xs font-mono font-semibold text-slate-600">
+          {WEEKDAY_NAMES_LONG.map((name, i) => (
+            <div key={name} className={i >= 5 ? 'text-slate-900 font-bold' : ''}>
+              <span className="sm:hidden">{WEEKDAY_NAMES_SHORT[i]}</span>
+              <span className="hidden sm:inline">{name}</span>
             </div>
           ))}
         </div>
 
+        {/* Responsive Month Days Cells */}
         <div className="grid grid-cols-7 auto-rows-fr divide-x divide-y divide-slate-100">
           {calendarCells.map((cell) => {
             const planEntry = workoutDateMap[cell.dateKey];
@@ -237,13 +241,13 @@ export default function MonthCalendar({ plan, userProfile }) {
             return (
               <div
                 key={cell.dateKey}
-                className={`min-h-[125px] p-1.5 flex flex-col justify-between transition-colors ${
-                  cell.isCurrentMonth ? 'bg-white' : 'bg-slate-50/60 text-slate-300'
-                } ${isToday ? 'ring-1 ring-inset ring-slate-900 bg-slate-50/40' : ''}`}
+                className={`min-h-[75px] sm:min-h-[120px] p-1 sm:p-1.5 flex flex-col justify-between transition-colors ${
+                  cell.isCurrentMonth ? 'bg-white' : 'bg-slate-50/50 text-slate-300'
+                } ${isToday ? 'ring-2 ring-inset ring-slate-900 bg-slate-50/60' : ''}`}
               >
                 <div className="flex items-center justify-between">
                   <span
-                    className={`text-xs font-mono font-medium rounded-full w-5 h-5 flex items-center justify-center ${
+                    className={`text-[11px] sm:text-xs font-mono font-medium rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center ${
                       isToday
                         ? 'bg-slate-900 text-white font-bold'
                         : cell.isCurrentMonth
@@ -255,13 +259,13 @@ export default function MonthCalendar({ plan, userProfile }) {
                   </span>
 
                   {planEntry && planEntry.dayItem.dayIndex === 0 && (
-                    <span className="text-[9px] font-mono font-medium px-1 bg-slate-100 text-slate-500 rounded border border-slate-200">
+                    <span className="hidden sm:inline-block text-[9px] font-mono font-medium px-1 bg-slate-100 text-slate-500 rounded border border-slate-200">
                       S{planEntry.weekNumber}
                     </span>
                   )}
                 </div>
 
-                <div className="my-1 flex-1">
+                <div className="my-0.5 sm:my-1 flex-1">
                   {workout ? (
                     (() => {
                       const sportBadge = getSportBadge(workout.sport, workout.category);
@@ -269,34 +273,32 @@ export default function MonthCalendar({ plan, userProfile }) {
                       return (
                         <button
                           onClick={() => setSelectedSessionModal({ ...planEntry, workout })}
-                          className={`w-full text-left p-1.5 rounded border transition-all text-xs cursor-pointer ${sportBadge.chip}`}
+                          className={`w-full text-left p-1 sm:p-1.5 rounded border transition-all text-xs cursor-pointer active:scale-95 ${sportBadge.chip}`}
                         >
-                          <div className="flex items-center gap-1 font-semibold text-[11px] leading-tight line-clamp-1">
+                          <div className="flex items-center gap-1 font-semibold text-[10px] sm:text-[11px] leading-tight line-clamp-1">
                             <span className={`w-1.5 h-1.5 rounded-full ${sportBadge.dot} shrink-0`}></span>
                             <span className="truncate">{workout.title}</span>
                           </div>
                           
-                          <div className="mt-1 flex items-center justify-between text-[10px] font-mono opacity-85">
+                          <div className="mt-0.5 sm:mt-1 flex items-center justify-between text-[9px] sm:text-[10px] font-mono opacity-85">
                             <span>{workout.durationMinutes}m</span>
                             {garmin ? (
-                              <span className="text-[9px] font-medium bg-white/70 px-1 rounded border border-black/5">
+                              <span className="hidden sm:inline-block text-[9px] font-medium bg-white/70 px-1 rounded border border-black/5">
                                 TE {garmin.aerobicTE}
                               </span>
-                            ) : (
-                              <span>{workout.estimatedTSS} TSS</span>
-                            )}
+                            ) : null}
                           </div>
                         </button>
                       );
                     })()
                   ) : planEntry && !planEntry.dayItem.isRest ? null : planEntry ? (
-                    <div className="text-[10px] text-slate-400 font-mono text-center py-2">
+                    <div className="text-[9px] sm:text-[10px] text-slate-400 font-mono text-center py-1 sm:py-2">
                       Repos
                     </div>
                   ) : null}
                 </div>
 
-                <div className="h-1"></div>
+                <div className="h-0.5"></div>
               </div>
             );
           })}
@@ -305,27 +307,27 @@ export default function MonthCalendar({ plan, userProfile }) {
 
       {/* Session Details Modal */}
       {selectedSessionModal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white border border-slate-200 rounded-xl max-w-lg w-full p-6 shadow-xl relative animate-in fade-in zoom-in-95 duration-100 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white border border-slate-200 rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-xl relative animate-in fade-in zoom-in-95 duration-100 max-h-[85vh] overflow-y-auto">
             <button
               onClick={() => setSelectedSessionModal(null)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 p-1 rounded-md hover:bg-slate-100 cursor-pointer"
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 p-2 rounded-lg hover:bg-slate-100 active:bg-slate-200"
             >
-              <X className="w-4 h-4" />
+              <X className="w-5 h-5" />
             </button>
 
             <div className="flex items-center gap-2 text-xs font-mono text-slate-500 uppercase tracking-wide">
               <span>Semaine {selectedSessionModal.weekNumber}</span>
               <span>·</span>
-              <span>{selectedSessionModal.date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
+              <span>{selectedSessionModal.date.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
             </div>
 
-            <h3 className="text-lg font-bold text-slate-900 mt-1">
+            <h3 className="text-base sm:text-lg font-bold text-slate-900 mt-1 pr-6">
               {selectedSessionModal.workout.title}
             </h3>
 
             {/* Metrics ribbon */}
-            <div className="mt-3 flex items-center gap-4 py-2 px-3 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono">
+            <div className="mt-3 flex items-center gap-3 py-2 px-3 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono">
               <div className="flex items-center gap-1.5 text-slate-700 font-medium">
                 <Clock className="w-3.5 h-3.5 text-slate-500" />
                 <span>{selectedSessionModal.workout.durationMinutes} min</span>
@@ -341,7 +343,7 @@ export default function MonthCalendar({ plan, userProfile }) {
               </span>
             </div>
 
-            {/* Garmin Physiological Impact Box (Firstbeat model) */}
+            {/* Garmin Physiological Impact Box */}
             {selectedSessionModal.workout.garminImpact && (
               <div className="mt-3 p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-2">
                 <div className="flex items-center justify-between text-xs border-b border-slate-200/80 pb-2">
@@ -371,11 +373,11 @@ export default function MonthCalendar({ plan, userProfile }) {
 
                 <div className="text-xs text-slate-700 pt-1 space-y-1">
                   <div>
-                    <strong className="text-slate-900">Impact corporel & fibres :</strong>{' '}
+                    <strong className="text-slate-900">Impact corporel :</strong>{' '}
                     {selectedSessionModal.workout.garminImpact.muscleAdaptation}
                   </div>
                   <div className="text-slate-500 text-[11px]">
-                    <strong>Carburant sollicité :</strong> {selectedSessionModal.workout.garminImpact.dominantFuel}
+                    <strong>Carburant :</strong> {selectedSessionModal.workout.garminImpact.dominantFuel}
                   </div>
                 </div>
               </div>
@@ -384,7 +386,7 @@ export default function MonthCalendar({ plan, userProfile }) {
             {/* Target Guidance */}
             {selectedSessionModal.workout.personalizedPace && (
               <div className="mt-3 p-2.5 bg-emerald-50 border border-emerald-200 rounded-lg text-xs font-mono text-emerald-800">
-                <strong>Cible personnalisée :</strong> {selectedSessionModal.workout.personalizedPace}
+                <strong>Cible :</strong> {selectedSessionModal.workout.personalizedPace}
               </div>
             )}
 
@@ -397,26 +399,26 @@ export default function MonthCalendar({ plan, userProfile }) {
             {selectedSessionModal.workout.steps && (
               <div className="mt-4 pt-3 border-t border-slate-100">
                 <div className="text-xs font-semibold text-slate-900 mb-2">
-                  Découpage par phases :
+                  Protocole détaillé :
                 </div>
                 <div className="space-y-1.5">
                   {selectedSessionModal.workout.steps.map((st, i) => (
                     <div
                       key={i}
-                      className="flex items-center justify-between text-xs py-1 px-2.5 bg-slate-50 rounded border border-slate-200 font-mono"
+                      className="flex items-center justify-between text-xs py-1.5 px-2 bg-slate-50 rounded border border-slate-200 font-mono"
                     >
-                      <span className="text-slate-800">{st.name}</span>
-                      <span className="text-slate-500 font-semibold">{st.duration}</span>
+                      <span className="text-slate-800 text-[11px]">{st.name}</span>
+                      <span className="text-slate-500 font-semibold text-[11px]">{st.duration}</span>
                     </div>
                   ))}
                 </div>
               </div>
             )}
 
-            <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
+            <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
               <button
                 onClick={() => setSelectedSessionModal(null)}
-                className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md text-xs font-medium cursor-pointer"
+                className="py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-medium cursor-pointer"
               >
                 Fermer
               </button>
@@ -429,10 +431,10 @@ export default function MonthCalendar({ plan, userProfile }) {
                     selectedSessionModal.weekNumber
                   );
                 }}
-                className="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-md text-xs font-medium flex items-center gap-1.5 cursor-pointer shadow-xs"
+                className="py-2.5 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-medium flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-98"
               >
                 <Download className="w-3.5 h-3.5" />
-                <span>Télécharger .FIT structuré</span>
+                <span>Télécharger .FIT</span>
               </button>
             </div>
           </div>
