@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useProfile } from '../context/ProfileContext';
-import { Lock, Mail, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Lock, Mail, ArrowRight, ShieldCheck, Activity } from 'lucide-react';
 
 export default function AuthScreen() {
   const { login } = useProfile();
@@ -21,16 +21,25 @@ export default function AuthScreen() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8 px-4 font-sans antialiased">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-slate-900 text-white font-bold text-lg tracking-tighter mb-3 shadow-md">
-          PP
+    <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8 px-4 font-sans antialiased relative overflow-hidden">
+      {/* Background Hero Accent Photo */}
+      <div className="absolute inset-0 z-0 opacity-[0.07] pointer-events-none">
+        <img 
+          src="https://images.unsplash.com/photo-1502680390469-be75c86b636f?auto=format&fit=crop&w=1920&q=80" 
+          alt="Endurance background" 
+          className="w-full h-full object-cover grayscale"
+        />
+      </div>
+
+      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center relative z-10">
+        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-slate-950 via-slate-900 to-sky-900 text-white mb-4 shadow-md ring-1 ring-white/20">
+          <Activity className="w-7 h-7 text-sky-400 stroke-[2.2]" />
         </div>
-        <h2 className="text-2xl font-bold tracking-tight text-slate-900">
-          PulsePlan Endurance
+        <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
+          PulsePlan
         </h2>
-        <p className="mt-1 text-xs text-slate-500 ">
-          Votre coach d'entraînement d'endurance sur-mesure
+        <p className="mt-1.5 text-xs sm:text-sm text-slate-500 font-medium">
+          L'ingénierie d'entraînement d'endurance pour athlètes exigeants
         </p>
       </div>
 

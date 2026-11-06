@@ -71,17 +71,17 @@ export default function Sidebar({ activeTab, setActiveTab, currentPlan, backendS
         {/* Brand Header */}
         <div className="p-4 border-b border-slate-200 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-900 text-white font-bold text-sm tracking-tighter shadow-xs">
-              PP
+            <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-tr from-slate-950 via-slate-900 to-sky-900 text-white shadow-sm ring-1 ring-white/20">
+              <Activity className="w-5 h-5 text-sky-400 stroke-[2.2]" />
             </div>
             <div>
-              <span className="font-bold text-slate-900 text-sm tracking-tight block">PulsePlan</span>
-              <span className="text-[10px] text-slate-500 block">Endurance Engine</span>
+              <span className="font-extrabold text-slate-900 text-[15px] tracking-tight block leading-none">PulsePlan</span>
+              <span className="text-[10px] text-slate-500 font-medium block mt-1">Endurance Engine</span>
             </div>
           </div>
           
-          <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
-            iOS / PWA
+          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs">
+            Pro
           </span>
         </div>
 

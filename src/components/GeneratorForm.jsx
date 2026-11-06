@@ -105,28 +105,47 @@ export default function GeneratorForm({ onPlanGenerated }) {
             <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-2">
               1. Discipline Sportive
             </label>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {Object.entries(disciplines).map(([key, disc]) => {
                 const isSelected = selectedDiscipline === key;
+                const heroImages = {
+                  running: 'https://images.unsplash.com/photo-1452626038306-9aae5e071dd3?auto=format&fit=crop&w=600&q=80',
+                  triathlon: 'https://images.unsplash.com/photo-1530549387789-4c1017266635?auto=format&fit=crop&w=600&q=80',
+                  trail: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=600&q=80'
+                };
+
                 return (
                   <button
                     key={key}
                     type="button"
                     onClick={() => handleDisciplineChange(key)}
-                    className={`p-3 rounded-lg border text-left transition-all cursor-pointer ${
+                    className={`relative rounded-xl overflow-hidden text-left transition-all cursor-pointer border ${
                       isSelected
-                        ? 'border-slate-900 bg-slate-900 text-white shadow-xs'
-                        : 'border-slate-200 bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50'
+                        ? 'border-slate-900 ring-2 ring-slate-900 shadow-md scale-[1.01]'
+                        : 'border-slate-200 hover:border-slate-300 hover:shadow-xs'
                     }`}
                   >
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold text-xs">{disc.name}</span>
-                      {isSelected && <Check className="w-3.5 h-3.5 text-white" />}
+                    <div className="h-28 w-full relative overflow-hidden">
+                      <img 
+                        src={heroImages[key]} 
+                        alt={disc.name}
+                        className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/40 to-transparent"></div>
+                      <div className="absolute bottom-2.5 left-3 right-3 flex items-center justify-between text-white">
+                        <span className="font-extrabold text-sm drop-shadow-xs">{disc.name}</span>
+                        {isSelected && (
+                          <span className="w-5 h-5 rounded-full bg-white text-slate-950 flex items-center justify-center">
+                            <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    <div className={`text-[11px] mt-1 ${isSelected ? 'text-slate-300' : 'text-slate-500'}`}>
+
+                    <div className="p-3 bg-white text-[11px] text-slate-600 font-medium">
                       {key === 'running' && 'Sur route (5k, 10k, Semi, Marathon)'}
                       {key === 'triathlon' && 'Natation, Vélo, Course & Enchaînements'}
-                      {key === 'trail' && 'Nature, Sentiers & Dénivelé'}
+                      {key === 'trail' && 'Nature, Sentiers techniques & D+'}
                     </div>
                   </button>
                 );

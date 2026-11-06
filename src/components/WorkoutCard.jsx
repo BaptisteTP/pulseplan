@@ -63,31 +63,36 @@ export default function WorkoutCard({
         return {
           label: 'Course',
           icon: Footprints,
-          badge: 'bg-rose-50 text-rose-700 border-rose-200'
+          badge: 'bg-rose-50 text-rose-700 border-rose-200/80',
+          dot: 'bg-rose-500'
         };
       case 'cycling':
         return {
           label: 'Vélo',
           icon: Bike,
-          badge: 'bg-amber-50 text-amber-800 border-amber-200'
+          badge: 'bg-amber-50 text-amber-800 border-amber-200/80',
+          dot: 'bg-amber-500'
         };
       case 'swimming':
         return {
           label: 'Natation',
           icon: Waves,
-          badge: 'bg-sky-50 text-sky-700 border-sky-200'
+          badge: 'bg-sky-50 text-sky-700 border-sky-200/80',
+          dot: 'bg-sky-500'
         };
       case 'trail':
         return {
           label: 'Trail',
           icon: Mountain,
-          badge: 'bg-emerald-50 text-emerald-800 border-emerald-200'
+          badge: 'bg-emerald-50 text-emerald-800 border-emerald-200/80',
+          dot: 'bg-emerald-500'
         };
       default:
         return {
           label: 'Brique',
           icon: Zap,
-          badge: 'bg-orange-50 text-orange-800 border-orange-200'
+          badge: 'bg-orange-50 text-orange-800 border-orange-200/80',
+          dot: 'bg-orange-500'
         };
     }
   };
@@ -103,19 +108,20 @@ export default function WorkoutCard({
   };
 
   return (
-    <div className={`min-h-[235px] bg-white border transition-all rounded-xl p-3 flex flex-col justify-between text-xs shadow-xs hover:shadow-sm relative ${
-      isTest ? 'border-purple-300 ring-1 ring-purple-100 bg-purple-50/10' : 'border-slate-200 hover:border-slate-300'
+    <div className={`min-h-[235px] bg-white border transition-all rounded-xl p-3.5 flex flex-col justify-between text-xs shadow-xs hover:shadow-sm relative ${
+      isTest ? 'border-purple-300 ring-1 ring-purple-100 bg-purple-50/10' : 'border-slate-200/90 hover:border-slate-300'
     }`}>
       <div>
         {/* Header: Day & Sport badge */}
         <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-          <span className="text-[11px] font-semibold text-slate-600 uppercase tracking-wide">
+          <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">
             {dayName}
           </span>
 
           <div className="flex items-center gap-1.5">
-            <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium border ${sportInfo.badge}`}>
-              <SportIcon className="w-3 h-3" />
+            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border ${sportInfo.badge}`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${sportInfo.dot}`}></span>
+              <SportIcon className="w-3 h-3 stroke-[2.2]" />
               {sportInfo.label}
             </span>
 
