@@ -306,6 +306,32 @@ export default function MonthCalendar({ plan, userProfile, onPlanUpdated, onOpen
     setDraggedCellKey(null);
   };
 
+  // Sport hero background image for month calendar
+  const getMonthHero = (key) => {
+    switch (key) {
+      case 'triathlon':
+        return {
+          image: 'https://images.unsplash.com/photo-1517649763962-0c623266ddc0?auto=format&fit=crop&w=1600&q=80',
+          gradient: 'from-sky-950/90 via-slate-900/80 to-slate-900/90',
+          badge: 'bg-sky-500/20 text-sky-300 border-sky-400/30'
+        };
+      case 'trail':
+        return {
+          image: 'https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&w=1600&q=80',
+          gradient: 'from-amber-950/90 via-slate-900/80 to-slate-900/90',
+          badge: 'bg-amber-500/20 text-amber-300 border-amber-400/30'
+        };
+      default:
+        return {
+          image: 'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?auto=format&fit=crop&w=1600&q=80',
+          gradient: 'from-rose-950/90 via-slate-900/80 to-slate-900/90',
+          badge: 'bg-rose-500/20 text-rose-300 border-rose-400/30'
+        };
+    }
+  };
+
+  const monthHero = getMonthHero(plan?.disciplineKey || 'running');
+
   return (
     <div className="space-y-3 sm:space-y-4">
       {/* Toast Notice when session is moved */}
@@ -316,49 +342,68 @@ export default function MonthCalendar({ plan, userProfile, onPlanUpdated, onOpen
         </div>
       )}
 
-      {/* Month Header & Controls */}
-      <div className="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center justify-between sm:justify-start gap-2">
-          <div className="flex items-center rounded-lg border border-slate-200 shadow-2xs overflow-hidden">
-            <button
-              onClick={handlePrevMonth}
-              className="p-2 sm:p-1.5 bg-white hover:bg-slate-50 text-slate-700 border-r border-slate-200 active:bg-slate-100"
-              title="Mois précédent"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <button
-              onClick={handleTodayMonth}
-              className="px-3 py-2 sm:py-1.5 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 active:bg-slate-100"
-            >
-              Aujourd'hui
-            </button>
-            <button
-              onClick={handleNextMonth}
-              className="p-2 sm:p-1.5 bg-white hover:bg-slate-50 text-slate-700 border-l border-slate-200 active:bg-slate-100"
-              title="Mois suivant"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
+      {/* Month Header Banner with High Quality Action Photo */}
+      <div className="relative rounded-2xl overflow-hidden shadow-sm border border-slate-800 text-white min-h-[135px] sm:min-h-[145px] flex flex-col justify-between p-4 sm:p-5">
+        <img 
+          src={monthHero.image} 
+          alt="Calendrier mensuel endurance" 
+          className="absolute inset-0 w-full h-full object-cover object-center z-0 scale-105 transition-transform duration-700" 
+        />
+        <div className={`absolute inset-0 z-10 bg-gradient-to-r ${monthHero.gradient} backdrop-blur-[1px]`}></div>
+
+        <div className="relative z-20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center justify-between sm:justify-start gap-3">
+            <div className="flex items-center rounded-xl bg-white/10 backdrop-blur-md border border-white/15 overflow-hidden shadow-2xs">
+              <button
+                onClick={handlePrevMonth}
+                className="p-2 sm:p-2 hover:bg-white/15 text-white border-r border-white/15 active:bg-white/20 transition-colors cursor-pointer"
+                title="Mois précédent"
+              >
+                <ChevronLeft className="w-4 h-4 stroke-[2.2]" />
+              </button>
+              <button
+                onClick={handleTodayMonth}
+                className="px-3 py-1.5 hover:bg-white/15 text-xs font-bold text-white active:bg-white/20 transition-colors cursor-pointer"
+              >
+                Ce mois
+              </button>
+              <button
+                onClick={handleNextMonth}
+                className="p-2 sm:p-2 hover:bg-white/15 text-white border-l border-white/15 active:bg-white/20 transition-colors cursor-pointer"
+                title="Mois suivant"
+              >
+                <ChevronRight className="w-4 h-4 stroke-[2.2]" />
+              </button>
+            </div>
+
+            <div>
+              <div className="flex items-center gap-1.5">
+                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${monthHero.badge}`}>
+                  {plan.disciplineName}
+                </span>
+                <span className="text-[11px] text-slate-300 font-medium hidden sm:inline">
+                  {plan.distanceLabel}
+                </span>
+              </div>
+              <h2 className="text-lg sm:text-xl font-extrabold text-white tracking-tight drop-shadow-xs mt-0.5">
+                {MONTH_NAMES[month]} {year}
+              </h2>
+            </div>
           </div>
 
-          <h2 className="text-base font-bold text-slate-900 tracking-tight">
-            {MONTH_NAMES[month]} {year}
-          </h2>
-        </div>
-
-        <div className="flex items-center justify-between sm:justify-end gap-4 text-xs border-t sm:border-t-0 border-slate-100 pt-2 sm:pt-0">
-          <div>
-            <span className="text-slate-400 uppercase text-[9px] font-semibold block">Séances</span>
-            <span className="text-slate-900 font-bold text-xs sm:text-sm">{monthWorkoutsCount}</span>
-          </div>
-          <div className="border-l border-slate-200 pl-4">
-            <span className="text-slate-400 uppercase text-[9px] font-semibold block">Volume</span>
-            <span className="text-slate-900 font-bold text-xs sm:text-sm">{Math.floor(monthTotalDuration / 60)}h{monthTotalDuration % 60}m</span>
-          </div>
-          <div className="border-l border-slate-200 pl-4">
-            <span className="text-slate-400 uppercase text-[9px] font-semibold block">TSS</span>
-            <span className="text-slate-900 font-bold text-xs sm:text-sm">{monthTotalTSS}</span>
+          <div className="flex items-center justify-between sm:justify-end gap-4 text-xs border-t sm:border-t-0 border-white/15 pt-2 sm:pt-0">
+            <div className="text-center sm:text-right">
+              <span className="text-slate-300 uppercase text-[9px] font-bold tracking-wider block">Séances</span>
+              <span className="text-white font-extrabold text-sm sm:text-base">{monthWorkoutsCount}</span>
+            </div>
+            <div className="border-l border-white/15 pl-4 text-center sm:text-right">
+              <span className="text-slate-300 uppercase text-[9px] font-bold tracking-wider block">Volume</span>
+              <span className="text-white font-extrabold text-sm sm:text-base">{Math.floor(monthTotalDuration / 60)}h{monthTotalDuration % 60}m</span>
+            </div>
+            <div className="border-l border-white/15 pl-4 text-center sm:text-right">
+              <span className="text-slate-300 uppercase text-[9px] font-bold tracking-wider block">TSS Mois</span>
+              <span className="text-amber-300 font-extrabold text-sm sm:text-base">{monthTotalTSS}</span>
+            </div>
           </div>
         </div>
       </div>
