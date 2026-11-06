@@ -192,7 +192,7 @@ export default function GeneratorForm({ onPlanGenerated }) {
                     }`}
                   >
                     <div className="font-medium text-xs">{distData.label}</div>
-                    <div className={`text-[10px] font-mono mt-1 ${isSelected ? 'text-slate-300' : 'text-slate-500'}`}>
+                    <div className={`text-[10px] mt-1 ${isSelected ? 'text-slate-300' : 'text-slate-500'}`}>
                       Bloc spécifique : {distData.weeks} semaines
                     </div>
                   </button>
@@ -208,7 +208,7 @@ export default function GeneratorForm({ onPlanGenerated }) {
                 <Calendar className="w-4 h-4 text-sky-600" />
                 <span>3. Date de la Compétition / Course Cible</span>
               </label>
-              <span className="text-[11px] font-mono text-slate-500">
+              <span className="text-[11px] text-slate-500">
                 Bloc spécifique standard : {standardSpecificWeeks} sem
               </span>
             </div>
@@ -220,15 +220,15 @@ export default function GeneratorForm({ onPlanGenerated }) {
                   value={raceDate}
                   min={new Date().toISOString().split('T')[0]}
                   onChange={(e) => setRaceDate(e.target.value)}
-                  className="w-full bg-white border border-slate-300 rounded-md px-3 py-2 text-xs font-mono font-bold text-slate-900 focus:outline-none focus:border-slate-700"
+                  className="w-full bg-white border border-slate-300 rounded-md px-3 py-2 text-xs font-bold text-slate-900 focus:outline-none focus:border-slate-700"
                 />
-                <p className="text-[10px] text-slate-400 mt-1 font-mono">
+                <p className="text-[10px] text-slate-400 mt-1 ">
                   Laissez vide pour démarrer directement sur le bloc de {standardSpecificWeeks} semaines.
                 </p>
               </div>
 
               {weeksUntilRace ? (
-                <div className="p-3 bg-white border border-slate-200 rounded-md text-xs font-mono space-y-1">
+                <div className="p-3 bg-white border border-slate-200 rounded-md text-xs space-y-1">
                   <div className="flex items-center justify-between">
                     <span className="text-slate-500">Délai total :</span>
                     <strong className="text-slate-900">{weeksUntilRace} semaines</strong>
@@ -245,7 +245,7 @@ export default function GeneratorForm({ onPlanGenerated }) {
                   )}
                 </div>
               ) : (
-                <div className="text-xs text-slate-500 font-mono italic">
+                <div className="text-xs text-slate-500 italic">
                   Sélectionnez une date pour décomposer automatiquement la prise de volume foncier avant le bloc spécifique.
                 </div>
               )}
@@ -263,20 +263,20 @@ export default function GeneratorForm({ onPlanGenerated }) {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
               <div>
-                <label className="block text-[11px] text-slate-500 font-mono mb-1">
+                <label className="block text-[11px] text-slate-500 mb-1">
                   Format HH:MM:SS
                 </label>
                 <input
                   type="text"
                   value={targetTime}
                   onChange={(e) => setTargetTime(e.target.value)}
-                  className="w-full bg-white border border-slate-300 rounded-md px-3 py-2 text-sm font-mono font-bold text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-700"
+                  className="w-full bg-white border border-slate-300 rounded-md px-3 py-2 text-sm font-bold text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-700"
                   placeholder={`Ex: ${defaultDistanceTime}`}
                 />
               </div>
 
               {pacePreview && (
-                <div className="p-3 bg-slate-50 border border-slate-200 rounded-md text-xs font-mono">
+                <div className="p-3 bg-slate-50 border border-slate-200 rounded-md text-xs ">
                   <div className="text-slate-400 text-[10px] uppercase font-semibold">
                     Allure Requise {targetTime.trim() === '' ? '(Aperçu indicatif)' : 'calculée'}
                   </div>
@@ -343,7 +343,7 @@ export default function GeneratorForm({ onPlanGenerated }) {
                     key={num}
                     type="button"
                     onClick={() => setDaysPerWeek(num)}
-                    className={`py-2 px-3 rounded-lg border text-center font-mono text-xs font-medium transition-all cursor-pointer ${
+                    className={`py-2 px-3 rounded-lg border text-center text-xs font-medium transition-all cursor-pointer ${
                       isSelected
                         ? 'border-slate-900 bg-slate-900 text-white shadow-xs'
                         : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'
@@ -358,7 +358,7 @@ export default function GeneratorForm({ onPlanGenerated }) {
 
           {/* Submit */}
           <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="text-xs text-slate-500 font-mono">
+            <div className="text-xs text-slate-500 ">
               Athlète : <strong>{profile.name || 'Athlète'}</strong> · Objectif : <span className="font-bold text-slate-900">{targetTime || `~${defaultDistanceTime}`}</span>
             </div>
 

@@ -61,7 +61,7 @@ export default function ExportPanel({ plan, userProfile }) {
             </p>
           </div>
           {notice && (
-            <span className="inline-flex items-center gap-1 text-xs font-mono text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">
+            <span className="inline-flex items-center gap-1 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">
               <Check className="w-3 h-3" />
               {notice}
             </span>
@@ -95,7 +95,7 @@ export default function ExportPanel({ plan, userProfile }) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Platform Selector */}
         <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-xs">
-          <div className="text-xs font-mono font-semibold uppercase text-slate-500 mb-2">
+          <div className="text-xs font-semibold uppercase text-slate-500 mb-2">
             Terminal / Marque
           </div>
           <div className="space-y-1.5">
@@ -112,7 +112,7 @@ export default function ExportPanel({ plan, userProfile }) {
                   }`}
                 >
                   <div>{p.name}</div>
-                  <div className={`text-[10px] font-mono mt-0.5 ${isSelected ? 'text-slate-300' : 'text-slate-400'}`}>
+                  <div className={`text-[10px] mt-0.5 ${isSelected ? 'text-slate-300' : 'text-slate-400'}`}>
                     {p.desc}
                   </div>
                 </button>
@@ -125,11 +125,11 @@ export default function ExportPanel({ plan, userProfile }) {
         <div className="md:col-span-2 bg-white border border-slate-200 rounded-lg p-4 shadow-xs">
           <div className="flex items-center justify-between pb-3 border-b border-slate-100">
             <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-500 font-mono">Semaine :</span>
+              <span className="text-xs text-slate-500 ">Semaine :</span>
               <select
                 value={selectedWeekIndex}
                 onChange={(e) => setSelectedWeekIndex(Number(e.target.value))}
-                className="bg-white border border-slate-200 text-xs text-slate-800 px-2.5 py-1 rounded font-mono focus:outline-none focus:border-slate-400"
+                className="bg-white border border-slate-200 text-xs text-slate-800 px-2.5 py-1 rounded focus:outline-none focus:border-slate-400"
               >
                 {plan.weeks.map((w, i) => (
                   <option key={w.weekNumber} value={i}>
@@ -158,12 +158,12 @@ export default function ExportPanel({ plan, userProfile }) {
                 >
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-slate-500 uppercase text-[10px] font-semibold">{dayItem.dayName}</span>
+                      <span className="text-slate-500 uppercase text-[10px] font-semibold">{dayItem.dayName}</span>
                       <span className="font-medium text-slate-900">{workout.title}</span>
-                      <span className="text-[10px] text-slate-500 font-mono">({workout.durationMinutes} min)</span>
+                      <span className="text-[10px] text-slate-500 ">({workout.durationMinutes} min)</span>
                     </div>
                     {workout.personalizedPace && (
-                      <div className="text-[10px] font-mono text-emerald-700 mt-0.5">
+                      <div className="text-[10px] text-emerald-700 mt-0.5">
                         {workout.personalizedPace}
                       </div>
                     )}
@@ -178,7 +178,7 @@ export default function ExportPanel({ plan, userProfile }) {
                       }
                       notify(`Séance exportée`);
                     }}
-                    className="px-2.5 py-1 bg-white hover:bg-slate-100 border border-slate-200 rounded text-xs font-mono text-slate-700 transition-colors cursor-pointer"
+                    className="px-2.5 py-1 bg-white hover:bg-slate-100 border border-slate-200 rounded text-xs text-slate-700 transition-colors cursor-pointer"
                   >
                     Export
                   </button>

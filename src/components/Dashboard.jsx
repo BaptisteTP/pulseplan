@@ -140,7 +140,7 @@ export default function Dashboard({ plan, userProfile, onPlanUpdated, onOpenExpo
                 <>
                   <span className="text-slate-300">·</span>
                   <span className="text-slate-700 font-medium">
-                    Allure : <span className="font-mono font-semibold">{plan.targetPaceData.formattedPace}</span> ({plan.targetPaceData.speedKmh} km/h)
+                    Allure : <span className="font-semibold">{plan.targetPaceData.formattedPace}</span> ({plan.targetPaceData.speedKmh} km/h)
                   </span>
                 </>
               )}
@@ -222,7 +222,7 @@ export default function Dashboard({ plan, userProfile, onPlanUpdated, onOpenExpo
 
           <button
             onClick={() => exportWeekToICal(currentWeek, plan)}
-            className="p-2 sm:px-2.5 sm:py-1.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-lg text-xs font-mono flex items-center gap-1"
+            className="p-2 sm:px-2.5 sm:py-1.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-lg text-xs flex items-center gap-1"
             title="Exporter vers agenda"
           >
             <Calendar className="w-3.5 h-3.5 text-slate-500" />
@@ -240,7 +240,7 @@ export default function Dashboard({ plan, userProfile, onPlanUpdated, onOpenExpo
       )}
 
       {/* Hint for moving sessions */}
-      <div className="px-1 text-[11px] text-slate-400 font-mono flex items-center gap-1.5">
+      <div className="px-1 text-[11px] text-slate-400 flex items-center gap-1.5">
         <ArrowRightLeft className="w-3.5 h-3.5 text-slate-400" />
         <span>Glissez-déposez une carte de séance sur un autre jour pour la déplacer ou utilisez le menu de déplacement.</span>
       </div>
@@ -281,7 +281,7 @@ export default function Dashboard({ plan, userProfile, onPlanUpdated, onOpenExpo
             <BarChart3 className="w-3.5 h-3.5 text-slate-500" />
             <span>Progression du cycle ({plan.totalWeeks} sem)</span>
           </div>
-          <span className="text-[10px] text-slate-400 font-mono">
+          <span className="text-[10px] text-slate-400 ">
             Touchez une semaine pour la voir
           </span>
         </div>
@@ -293,7 +293,7 @@ export default function Dashboard({ plan, userProfile, onPlanUpdated, onOpenExpo
               <button
                 key={w.weekNumber}
                 onClick={() => setCurrentWeekIndex(idx)}
-                className={`py-2 px-2.5 sm:px-1 rounded-lg border text-center font-mono text-[11px] shrink-0 sm:shrink min-w-[50px] sm:min-w-0 transition-all cursor-pointer ${
+                className={`py-2 px-2.5 sm:px-1 rounded-lg border text-center text-[11px] shrink-0 sm:shrink min-w-[50px] sm:min-w-0 transition-all cursor-pointer ${
                   isSelected
                     ? 'border-slate-900 bg-slate-900 text-white shadow-xs font-bold'
                     : w.isBaselineWeek

@@ -74,7 +74,7 @@ export default function WeekReviewModal({ week, plan, onPlanUpdated, onClose }) 
     <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
       <div className="bg-white border border-slate-200 rounded-xl max-w-lg w-full p-6 shadow-xl relative animate-in fade-in zoom-in-95 duration-100">
         <div className="pb-4 border-b border-slate-100">
-          <div className="flex items-center gap-2 text-xs font-mono text-slate-500 uppercase tracking-wide">
+          <div className="flex items-center gap-2 text-xs text-slate-500 uppercase tracking-wide">
             <span>Bilan Coach Fin de Semaine</span>
             <span>·</span>
             <span>Semaine {week.weekNumber}</span>
@@ -129,14 +129,14 @@ export default function WeekReviewModal({ week, plan, onPlanUpdated, onClose }) 
 
             {/* Optional comment */}
             <div>
-              <label className="block text-[11px] font-mono text-slate-500 mb-1">
+              <label className="block text-[11px] text-slate-500 mb-1">
                 Note facultative pour le coach :
               </label>
               <textarea
                 value={comments}
                 onChange={(e) => setComments(e.target.value)}
                 placeholder="Ex: Légère douleur au tendon d'Achille, ou très bonne aisance sur la sortie longue..."
-                className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-slate-400 font-mono"
+                className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-slate-400 "
                 rows="2"
               ></textarea>
             </div>

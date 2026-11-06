@@ -33,7 +33,7 @@ export default function Header({ activeTab, setActiveTab, currentPlan }) {
                 <span>·</span>
                 <span>{currentPlan.distanceLabel}</span>
                 <span>·</span>
-                <span className="font-mono">{currentPlan.daysPerWeek}j/sem</span>
+                <span className="">{currentPlan.daysPerWeek}j/sem</span>
               </div>
             )}
           </div>
@@ -56,7 +56,7 @@ export default function Header({ activeTab, setActiveTab, currentPlan }) {
                   <Icon className="w-3.5 h-3.5 text-slate-500" />
                   <span>{item.label}</span>
                   {item.badge && (
-                    <span className="ml-0.5 px-1 py-0.2 rounded text-[10px] font-mono bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <span className="ml-0.5 px-1 py-0.2 rounded text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200">
                       {item.badge}
                     </span>
                   )}

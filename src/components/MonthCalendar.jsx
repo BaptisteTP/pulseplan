@@ -310,7 +310,7 @@ export default function MonthCalendar({ plan, userProfile, onPlanUpdated, onOpen
     <div className="space-y-3 sm:space-y-4">
       {/* Toast Notice when session is moved */}
       {moveNotice && (
-        <div className="fixed top-4 right-4 z-50 bg-slate-900 text-white text-xs font-mono py-2.5 px-4 rounded-xl shadow-lg border border-slate-700 animate-in fade-in slide-in-from-top-2 flex items-center gap-2">
+        <div className="fixed top-4 right-4 z-50 bg-slate-900 text-white text-xs py-2.5 px-4 rounded-xl shadow-lg border border-slate-700 animate-in fade-in slide-in-from-top-2 flex items-center gap-2">
           <ArrowRightLeft className="w-3.5 h-3.5 text-emerald-400" />
           <span>{moveNotice}</span>
         </div>
@@ -453,7 +453,7 @@ export default function MonthCalendar({ plan, userProfile, onPlanUpdated, onOpen
                       );
                     })()
                   ) : planEntry && !planEntry.dayItem.isRest ? null : planEntry ? (
-                    <div className="text-[9px] sm:text-[10px] text-slate-400 font-mono text-center py-1 sm:py-2 select-none">
+                    <div className="text-[9px] sm:text-[10px] text-slate-400 text-center py-1 sm:py-2 select-none">
                       Repos
                     </div>
                   ) : null}
@@ -478,7 +478,7 @@ export default function MonthCalendar({ plan, userProfile, onPlanUpdated, onOpen
             </button>
 
             <div className="flex items-center justify-between pr-8">
-              <div className="flex items-center gap-2 text-xs font-mono text-slate-500 uppercase tracking-wide">
+              <div className="flex items-center gap-2 text-xs text-slate-500 uppercase tracking-wide">
                 <span>Semaine {selectedSessionModal.weekNumber}</span>
                 <span>·</span>
                 <span>{selectedSessionModal.date.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
@@ -529,9 +529,9 @@ export default function MonthCalendar({ plan, userProfile, onPlanUpdated, onOpen
                         >
                           <div className="flex items-center justify-between">
                             <span className="font-bold">{d.dayName}</span>
-                            {isCurrentDay && <span className="text-[9px] font-mono uppercase text-slate-400">Actuel</span>}
+                            {isCurrentDay && <span className="text-[9px] uppercase text-slate-400">Actuel</span>}
                           </div>
-                          <div className="text-[10px] text-slate-500 font-mono mt-0.5 truncate">
+                          <div className="text-[10px] text-slate-500 mt-0.5 truncate">
                             {d.isRest ? '🌿 Repos' : `⚡ ${d.workout?.title.substring(0, 10)}...`}
                           </div>
                         </button>
@@ -543,7 +543,7 @@ export default function MonthCalendar({ plan, userProfile, onPlanUpdated, onOpen
             </div>
 
             {/* Metrics ribbon */}
-            <div className="mt-3 flex items-center gap-3 py-2 px-3 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono">
+            <div className="mt-3 flex items-center gap-3 py-2 px-3 bg-slate-50 border border-slate-200 rounded-lg text-xs ">
               <div className="flex items-center gap-1.5 text-slate-700 font-medium">
                 <Clock className="w-3.5 h-3.5 text-slate-500" />
                 <span>{selectedSessionModal.workout.durationMinutes} min</span>
@@ -567,12 +567,12 @@ export default function MonthCalendar({ plan, userProfile, onPlanUpdated, onOpen
                     <Activity className="w-3.5 h-3.5 text-sky-600" />
                     <span>Bénéfice : {selectedSessionModal.workout.garminImpact.primaryBenefit}</span>
                   </div>
-                  <div className="font-mono text-[11px] text-slate-700">
+                  <div className="text-[11px] text-slate-700">
                     EPOC : {selectedSessionModal.workout.garminImpact.epocRange}
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 text-xs font-mono">
+                <div className="grid grid-cols-2 gap-2 text-xs ">
                   <div className="p-2 bg-white rounded border border-slate-200">
                     <div className="text-[10px] text-slate-500 uppercase">Training Effect Aérobie</div>
                     <div className="text-sm font-bold text-sky-700 mt-0.5">
@@ -601,7 +601,7 @@ export default function MonthCalendar({ plan, userProfile, onPlanUpdated, onOpen
 
             {/* Target Guidance */}
             {selectedSessionModal.workout.personalizedPace && (
-              <div className="mt-3 p-2.5 bg-emerald-50 border border-emerald-200 rounded-lg text-xs font-mono text-emerald-800">
+              <div className="mt-3 p-2.5 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-800">
                 <strong>Cible :</strong> {selectedSessionModal.workout.personalizedPace}
               </div>
             )}
@@ -621,7 +621,7 @@ export default function MonthCalendar({ plan, userProfile, onPlanUpdated, onOpen
                   {selectedSessionModal.workout.steps.map((st, i) => (
                     <div
                       key={i}
-                      className="flex items-center justify-between text-xs py-1.5 px-2 bg-slate-50 rounded border border-slate-200 font-mono"
+                      className="flex items-center justify-between text-xs py-1.5 px-2 bg-slate-50 rounded border border-slate-200 "
                     >
                       <span className="text-slate-800 text-[11px]">{st.name}</span>
                       <span className="text-slate-500 font-semibold text-[11px]">{st.duration}</span>

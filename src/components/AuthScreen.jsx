@@ -29,7 +29,7 @@ export default function AuthScreen() {
         <h2 className="text-2xl font-bold tracking-tight text-slate-900">
           PulsePlan Endurance
         </h2>
-        <p className="mt-1 text-xs text-slate-500 font-mono">
+        <p className="mt-1 text-xs text-slate-500 ">
           Votre coach d'entraînement d'endurance sur-mesure
         </p>
       </div>
@@ -72,7 +72,7 @@ export default function AuthScreen() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Ex: Alexandre Renard"
-                  className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-slate-500 font-mono"
+                  className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-slate-500 "
                   required={isRegister}
                 />
               </div>
@@ -88,7 +88,7 @@ export default function AuthScreen() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="exemple@endurance.io"
-                  className="w-full text-xs p-2.5 pl-8 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-slate-500 font-mono"
+                  className="w-full text-xs p-2.5 pl-8 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-slate-500 "
                   required
                 />
                 <Mail className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-3" />
@@ -105,7 +105,7 @@ export default function AuthScreen() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full text-xs p-2.5 pl-8 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-slate-500 font-mono"
+                  className="w-full text-xs p-2.5 pl-8 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-slate-500 "
                   required
                 />
                 <Lock className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-3" />
@@ -132,7 +132,7 @@ export default function AuthScreen() {
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
               Données privées & chiffrées
             </span>
-            <span className="font-mono">PWA iPhone Ready</span>
+            <span className="">PWA iPhone Ready</span>
           </div>
         </div>
       </div>

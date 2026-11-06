@@ -103,15 +103,15 @@ export default function WatchSyncModal({ plan }) {
         {/* How it works info banner */}
         <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-slate-600 bg-slate-50 p-3.5 rounded-lg border border-slate-200">
           <div className="flex items-start gap-2">
-            <span className="font-bold font-mono text-slate-900 bg-white border border-slate-200 w-5 h-5 rounded flex items-center justify-center shrink-0">1</span>
+            <span className="font-bold text-slate-900 bg-white border border-slate-200 w-5 h-5 rounded flex items-center justify-center shrink-0">1</span>
             <span>Vous autorisez PulsePlan avec votre compte Garmin, Coros ou Wahoo.</span>
           </div>
           <div className="flex items-start gap-2">
-            <span className="font-bold font-mono text-slate-900 bg-white border border-slate-200 w-5 h-5 rounded flex items-center justify-center shrink-0">2</span>
+            <span className="font-bold text-slate-900 bg-white border border-slate-200 w-5 h-5 rounded flex items-center justify-center shrink-0">2</span>
             <span>L'API Cloud planifie vos séances automatiquement sur votre calendrier de montre.</span>
           </div>
           <div className="flex items-start gap-2">
-            <span className="font-bold font-mono text-slate-900 bg-white border border-slate-200 w-5 h-5 rounded flex items-center justify-center shrink-0">3</span>
+            <span className="font-bold text-slate-900 bg-white border border-slate-200 w-5 h-5 rounded flex items-center justify-center shrink-0">3</span>
             <span>Le jour J, allumez votre montre : la séance démarre au bon rythme.</span>
           </div>
         </div>
@@ -137,7 +137,7 @@ export default function WatchSyncModal({ plan }) {
                     </div>
                     <div>
                       <h4 className="font-semibold text-sm text-slate-900">{dev.name}</h4>
-                      <span className="text-[11px] text-slate-400 font-mono">{dev.scope}</span>
+                      <span className="text-[11px] text-slate-400 ">{dev.scope}</span>
                     </div>
                   </div>
 
@@ -147,7 +147,7 @@ export default function WatchSyncModal({ plan }) {
                       Connecté
                     </span>
                   ) : (
-                    <span className="text-[11px] font-mono text-slate-400">
+                    <span className="text-[11px] text-slate-400">
                       Déconnecté
                     </span>
                   )}
@@ -156,10 +156,10 @@ export default function WatchSyncModal({ plan }) {
                 <div className="py-3 text-xs text-slate-600">
                   {dev.connected ? (
                     <div className="space-y-1">
-                      <div className="text-slate-500 font-mono text-[11px]">
+                      <div className="text-slate-500 text-[11px]">
                         Compte relié : <span className="text-slate-800 font-semibold">{dev.accountName}</span>
                       </div>
-                      <div className="text-slate-500 font-mono text-[11px]">
+                      <div className="text-slate-500 text-[11px]">
                         Dernière synchronisation :{' '}
                         <span className="text-slate-700">
                           {dev.lastSync ? new Date(dev.lastSync).toLocaleTimeString('fr-FR') : 'Jamais'}
@@ -223,14 +223,14 @@ export default function WatchSyncModal({ plan }) {
       {/* Sync Log History */}
       {syncHistory.length > 0 && (
         <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-xs">
-          <div className="text-xs font-mono font-semibold uppercase text-slate-500 mb-2">
+          <div className="text-xs font-semibold uppercase text-slate-500 mb-2">
             Historique des push récents vers vos appareils
           </div>
           <div className="space-y-1.5">
             {syncHistory.map((item) => (
               <div
                 key={item.id}
-                className="flex items-center justify-between text-xs py-1.5 px-3 bg-slate-50 border border-slate-100 rounded font-mono"
+                className="flex items-center justify-between text-xs py-1.5 px-3 bg-slate-50 border border-slate-100 rounded "
               >
                 <div className="flex items-center gap-2">
                   <span className="text-emerald-600 font-bold">✓ PUSH REUSSI</span>

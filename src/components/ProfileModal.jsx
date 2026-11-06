@@ -46,7 +46,7 @@ export default function ProfileModal() {
                 name="name"
                 value={formData.name || ''}
                 onChange={handleChange}
-                className="w-full bg-white border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-500 font-mono transition-colors"
+                className="w-full bg-white border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-500 transition-colors"
                 placeholder="Ex: Alexandre Renard"
               />
             </div>
@@ -59,7 +59,7 @@ export default function ProfileModal() {
                 name="email"
                 value={formData.email || ''}
                 onChange={handleChange}
-                className="w-full bg-white border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-500 font-mono transition-colors"
+                className="w-full bg-white border border-slate-200 rounded-lg px-3.5 py-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-500 transition-colors"
                 placeholder="exemple@endurance.io"
               />
             </div>
@@ -87,7 +87,7 @@ export default function ProfileModal() {
                     value={formData.vma || ''}
                     onChange={handleChange}
                     placeholder="Ex: 16.0"
-                    className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-500 font-mono"
+                    className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-500 "
                   />
                   <span className="absolute right-3 top-2 text-[11px] text-slate-400">km/h</span>
                 </div>
@@ -108,7 +108,7 @@ export default function ProfileModal() {
                     value={formData.ftp || ''}
                     onChange={handleChange}
                     placeholder="Ex: 250"
-                    className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-500 font-mono"
+                    className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-500 "
                   />
                   <span className="absolute right-3 top-2 text-[11px] text-slate-400">Watts</span>
                 </div>
@@ -129,7 +129,7 @@ export default function ProfileModal() {
                     value={formData.fcMax || ''}
                     onChange={handleChange}
                     placeholder="Ex: 185"
-                    className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-500 font-mono"
+                    className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-500 "
                   />
                   <span className="absolute right-3 top-2 text-[11px] text-slate-400">bpm</span>
                 </div>
@@ -154,7 +154,7 @@ export default function ProfileModal() {
                   name="weeklyHoursLimit"
                   value={formData.weeklyHoursLimit}
                   onChange={handleChange}
-                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-slate-500 font-mono"
+                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-slate-500 "
                 >
                   <option value="6">Jusqu'à 6 heures / semaine</option>
                   <option value="8">Jusqu'à 8 heures / semaine</option>
@@ -172,7 +172,7 @@ export default function ProfileModal() {
                   name="level"
                   value={formData.level}
                   onChange={handleChange}
-                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-slate-500 font-mono"
+                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-slate-500 "
                 >
                   <option value="Débutant structuré">Débutant structuré (1-2 ans de pratique)</option>
                   <option value="Intermédiaire">Intermédiaire (pratique régulière, objectifs chronos)</option>
@@ -184,7 +184,7 @@ export default function ProfileModal() {
 
           {/* Submit bar */}
           <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
-            <span className="text-[11px] text-slate-400 font-mono">
+            <span className="text-[11px] text-slate-400 ">
               Données enregistrées en local et sur votre compte cloud.
             </span>
             <div className="flex items-center gap-3">

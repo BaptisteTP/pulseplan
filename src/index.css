@@ -1,17 +1,12 @@
 @import "tailwindcss";
 
 @layer base {
-  body {
+  body, code, pre, .font-mono {
     background-color: #f8fafc;
     color: #0f172a;
-    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif !important;
     -webkit-font-smoothing: antialiased;
     letter-spacing: -0.011em;
-  }
-
-  code, pre, .font-mono {
-    font-family: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    letter-spacing: -0.015em;
   }
 }
 

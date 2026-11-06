@@ -76,11 +76,11 @@ export default function Sidebar({ activeTab, setActiveTab, currentPlan, backendS
             </div>
             <div>
               <span className="font-bold text-slate-900 text-sm tracking-tight block">PulsePlan</span>
-              <span className="text-[10px] text-slate-500 font-mono block">Endurance Engine</span>
+              <span className="text-[10px] text-slate-500 block">Endurance Engine</span>
             </div>
           </div>
           
-          <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+          <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
             iOS / PWA
           </span>
         </div>
@@ -122,14 +122,14 @@ export default function Sidebar({ activeTab, setActiveTab, currentPlan, backendS
                   <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-500'}`} />
                   <div>
                     <span className="text-xs font-medium block leading-tight">{item.label}</span>
-                    <span className={`text-[10px] font-mono block ${isActive ? 'text-slate-300' : 'text-slate-400'}`}>
+                    <span className={`text-[10px] block ${isActive ? 'text-slate-300' : 'text-slate-400'}`}>
                       {item.desc}
                     </span>
                   </div>
                 </div>
 
                 {item.badge && (
-                  <span className={`px-1.5 py-0.5 rounded text-[10px] font-mono border ${
+                  <span className={`px-1.5 py-0.5 rounded text-[10px] border ${
                     isActive ? 'bg-white/20 text-white border-white/30' : item.badgeColor
                   }`}>
                     {item.badge}
@@ -146,7 +146,7 @@ export default function Sidebar({ activeTab, setActiveTab, currentPlan, backendS
         {user && (
           <div className="flex items-center justify-between text-xs pb-2 border-b border-slate-200">
             <div className="truncate">
-              <div className="text-[10px] text-slate-400 font-mono">Connecté en tant que</div>
+              <div className="text-[10px] text-slate-400 ">Connecté en tant que</div>
               <div className="text-slate-800 font-semibold truncate text-xs">{user.email}</div>
             </div>
             <button
@@ -160,11 +160,11 @@ export default function Sidebar({ activeTab, setActiveTab, currentPlan, backendS
         )}
 
         <div className="flex items-center justify-between text-xs">
-          <div className="flex items-center gap-2 font-mono text-[11px] text-slate-600">
+          <div className="flex items-center gap-2 text-[11px] text-slate-600">
             <Server className="w-3.5 h-3.5 text-slate-500" />
             <span>API Backend :</span>
           </div>
-          <span className={`inline-flex items-center gap-1 font-mono text-[10px] px-1.5 py-0.5 rounded border ${
+          <span className={`inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded border ${
             backendStatus === 'online'
               ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
               : 'bg-amber-50 text-amber-700 border-amber-200'
