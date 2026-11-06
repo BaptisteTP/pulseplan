@@ -13,12 +13,36 @@ export const DAYS_OF_WEEK = [
   'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'
 ];
 
+// Dynamic schedule templates: vary training days across weeks to break robotic weekly repetition
 const SCHEDULE_TEMPLATES = {
-  3: [1, 3, 5],            // Mardi, Jeudi, Samedi
-  4: [1, 3, 5, 6],         // Mardi, Jeudi, Samedi, Dimanche
-  5: [1, 2, 4, 5, 6],      // Mardi, Mercredi, Vendredi, Samedi, Dimanche
-  6: [0, 1, 2, 3, 5, 6]    // Lundi, Mardi, Mercredi, Jeudi, Samedi, Dimanche
+  3: {
+    patternA: [1, 3, 5],            // Mardi, Jeudi, Samedi
+    patternB: [0, 2, 5],            // Lundi, Mercredi, Samedi
+    patternC: [1, 4, 6]             // Mardi, Vendredi, Dimanche
+  },
+  4: {
+    patternA: [1, 3, 5, 6],         // Mardi, Jeudi, Samedi, Dimanche (classique)
+    patternB: [0, 2, 4, 6],         // Lundi, Mercredi, Vendredi, Dimanche (alterné équilibré)
+    patternC: [1, 2, 4, 5]          // Mardi, Mercredi, Vendredi, Samedi (bloc week-end allégé)
+  },
+  5: {
+    patternA: [1, 2, 4, 5, 6],      // Mardi, Mercredi, Vendredi, Samedi, Dimanche
+    patternB: [0, 1, 3, 4, 6],      // Lundi, Mardi, Jeudi, Vendredi, Dimanche
+    patternC: [0, 2, 3, 5, 6]       // Lundi, Mercredi, Jeudi, Samedi, Dimanche
+  },
+  6: {
+    patternA: [0, 1, 2, 3, 5, 6],   // Lundi, Mardi, Mercredi, Jeudi, Samedi, Dimanche
+    patternB: [0, 1, 3, 4, 5, 6],   // Lundi, Mardi, Jeudi, Vendredi, Samedi, Dimanche
+    patternC: [0, 1, 2, 4, 5, 6]    // Lundi, Mardi, Mercredi, Vendredi, Samedi, Dimanche
+  }
 };
+
+function getWeekTargetSlots(daysPerWeek, weekNumber) {
+  const configs = SCHEDULE_TEMPLATES[daysPerWeek] || SCHEDULE_TEMPLATES[4];
+  if (weekNumber % 3 === 1) return configs.patternA;
+  if (weekNumber % 3 === 2) return configs.patternB;
+  return configs.patternC;
+}
 
 const EVENT_DISTANCES_KM = {
   '5k': 5.0,
@@ -229,7 +253,6 @@ export function generateTrainingPlan({
   const effectiveTargetTime = targetTime || DEFAULT_TARGET_TIMES[distanceKey] || '03:30:00';
   const targetPaceData = calculateRequiredPace(distanceKey, effectiveTargetTime);
 
-  const targetSlots = SCHEDULE_TEMPLATES[daysPerWeek] || SCHEDULE_TEMPLATES[4];
   const library = database.library;
   const hasPower = Boolean(userProfile.hasPowerMeter);
   const effectiveSwimLevel = swimLevel || userProfile.swimLevel || 'intermediaire';
@@ -239,6 +262,8 @@ export function generateTrainingPlan({
   for (let w = 1; w <= totalWeeks; w++) {
     const isBaselineWeek = (w === 1);
     const isRecoveryWeek = (w % 4 === 0) && w !== totalWeeks && !isBaselineWeek;
+    // Dynamic slots per week to prevent robotic repetition on identical days
+    const weekTargetSlots = getWeekTargetSlots(daysPerWeek, w);
 
     let phase = 'Développement Foncier';
     let phaseCategory = 'base';
@@ -281,7 +306,7 @@ export function generateTrainingPlan({
     }
 
     const days = DAYS_OF_WEEK.map((dayName, dayIndex) => {
-      const isTrainingDay = targetSlots.includes(dayIndex);
+      const isTrainingDay = weekTargetSlots.includes(dayIndex);
       if (!isTrainingDay) {
         return {
           dayIndex,
@@ -294,7 +319,7 @@ export function generateTrainingPlan({
       const workout = pickWorkoutForSlot({
         disciplineKey,
         dayIndex,
-        targetSlots,
+        targetSlots: weekTargetSlots,
         library,
         weekNumber: w,
         phase,
@@ -447,52 +472,75 @@ function pickWorkoutForSlot({
   // Triathlon selection: swimming according to level + bike variation + bricks + taper/recovery
   if (!template && disciplineKey === 'triathlon') {
     const swimPool = library.swimming[swimLevel] || library.swimming['intermediaire'];
+    const swimSlotsCount = swimPool.length;
+
+    // Dynamically alternate which discipline gets the primary weekend or midweek slots based on weekNumber
+    const weekendPrimaryDay = targetSlots[targetSlots.length - 2] ?? 5;
+    const weekendSecondaryDay = targetSlots[targetSlots.length - 1] ?? 6;
+    const midweekQualityDay = targetSlots[0];
+    const midweekAerobicDay = targetSlots[1] ?? targetSlots[0];
 
     if (phaseCategory === 'taper') {
-      if (dayIndex === 5) {
+      if (dayIndex === weekendPrimaryDay) {
         template = library.cycling.find(w => w.id === 'bike_taper_reactivation') || library.cycling.find(w => w.id === 'bike_recup');
-      } else if (dayIndex === 6) {
+      } else if (dayIndex === weekendSecondaryDay) {
         template = library.running.find(w => w.id === 'run_taper_reactivation') || library.running.find(w => w.id === 'run_recup');
-      } else if (dayIndex === targetSlots[0]) {
+      } else if (dayIndex === midweekQualityDay) {
         template = swimPool[0];
       } else {
         template = library.cycling.find(w => w.id === 'bike_recup') || library.running.find(w => w.id === 'run_recup');
       }
     } else if (isRecoveryWeek) {
-      if (dayIndex === 5) {
+      if (dayIndex === weekendPrimaryDay) {
         template = library.cycling.find(w => w.id === 'bike_recup') || library.cycling.find(w => w.id === 'bike_z2_endurance');
-      } else if (dayIndex === 6) {
+      } else if (dayIndex === weekendSecondaryDay) {
         template = library.running.find(w => w.id === 'run_recup') || library.running.find(w => w.id === 'run_ef_base');
-      } else if (dayIndex === targetSlots[0]) {
-        template = swimPool[0]; // Technique / aisance
+      } else if (dayIndex === midweekQualityDay) {
+        template = swimPool[0]; // Technique / aisance douce
       } else {
         template = library.cycling.find(w => w.id === 'bike_z2_endurance');
       }
     } else {
-      if (dayIndex === 5) {
-        // Weekend Long Ride: Rotate between endurance, tempo tri, and force/vélocité
-        if (weekNumber % 3 === 1) {
-          template = library.cycling.find(w => w.id === 'bike_long_endurance');
-        } else if (weekNumber % 3 === 2) {
-          template = library.cycling.find(w => w.id === 'bike_long_tempo_tri') || library.cycling.find(w => w.id === 'bike_long_endurance');
+      // Rotate sport distribution depending on odd/even weeks
+      const isBikePrimaryWeekend = (weekNumber % 2 === 1);
+
+      if (dayIndex === weekendPrimaryDay) {
+        if (isBikePrimaryWeekend) {
+          // Weekend Ride
+          if (weekNumber % 3 === 1) {
+            template = library.cycling.find(w => w.id === 'bike_long_endurance');
+          } else if (weekNumber % 3 === 2) {
+            template = library.cycling.find(w => w.id === 'bike_long_tempo_tri') || library.cycling.find(w => w.id === 'bike_long_endurance');
+          } else {
+            template = library.cycling.find(w => w.id === 'bike_force_velocite') || library.cycling.find(w => w.id === 'bike_long_endurance');
+          }
         } else {
-          template = library.cycling.find(w => w.id === 'bike_force_velocite') || library.cycling.find(w => w.id === 'bike_long_endurance');
-        }
-      } else if (dayIndex === 6) {
-        // Sunday: In specific phase, rotate brick workouts; otherwise alternate long run and undulating
-        if (phase.includes('Spécifique') && library.brick?.length && (weekNumber % 2 === 1)) {
-          template = (weekNumber % 4 === 1)
-            ? library.brick[0]
-            : (library.brick[1] || library.brick[0]);
-        } else {
+          // Weekend Long Run
           template = (weekNumber % 2 === 0)
             ? (library.running.find(w => w.id === 'run_long_ondulante') || library.running.find(w => w.id === 'run_long_run'))
             : library.running.find(w => w.id === 'run_long_run');
         }
-      } else if (dayIndex === targetSlots[0]) {
-        template = swimPool[weekNumber % swimPool.length] || swimPool[0];
-      } else {
-        // Midweek Quality Slot: Rotate between SweetSpot, PMA VO2, Seuil Over-Under, or Running Fartlek
+      } else if (dayIndex === weekendSecondaryDay) {
+        if (isBikePrimaryWeekend) {
+          // In specific prep: alternate brick transition or running
+          if (phase.includes('Spécifique') && library.brick?.length && (weekNumber % 2 === 1)) {
+            template = (weekNumber % 4 === 1)
+              ? library.brick[0]
+              : (library.brick[1] || library.brick[0]);
+          } else {
+            template = library.running.find(w => w.id === 'run_long_run') || library.running[0];
+          }
+        } else {
+          // Alternate with endurance bike or SweetSpot ride
+          template = (weekNumber % 3 === 0)
+            ? library.cycling.find(w => w.id === 'bike_sweetspot')
+            : library.cycling.find(w => w.id === 'bike_z2_endurance');
+        }
+      } else if (dayIndex === midweekQualityDay) {
+        // Rotate swimming session through all available variations
+        template = swimPool[(weekNumber - 1) % swimSlotsCount] || swimPool[0];
+      } else if (dayIndex === midweekAerobicDay && targetSlots.length >= 4) {
+        // Midweek cycling or running speedwork alternated
         if (weekNumber % 4 === 1) {
           template = library.cycling.find(w => w.id === 'bike_sweetspot');
         } else if (weekNumber % 4 === 2) {
@@ -500,8 +548,13 @@ function pickWorkoutForSlot({
         } else if (weekNumber % 4 === 3) {
           template = library.cycling.find(w => w.id === 'bike_seuil_over_under') || library.cycling.find(w => w.id === 'bike_sweetspot');
         } else {
-          template = library.running.find(w => w.id === 'run_fartlek_nature') || library.running[0];
+          template = library.running.find(w => w.id === 'run_fartlek_nature') || library.running.find(w => w.id === 'run_vma_short');
         }
+      } else {
+        // Additional slots: aerobic running or cycling
+        template = (weekNumber % 2 === 0)
+          ? library.running.find(w => w.id === 'run_ef_base')
+          : (library.cycling.find(w => w.id === 'bike_z2_endurance') || library.running.find(w => w.id === 'run_ef_base'));
       }
     }
   }
