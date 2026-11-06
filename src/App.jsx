@@ -35,17 +35,10 @@ export default function App() {
   }, []);
 
   const [currentPlan, setCurrentPlan] = useState(() => {
-    return generateTrainingPlan({
-      disciplineKey: profile.currentDiscipline || 'running',
-      distanceKey: profile.currentDistance || 'marathon',
-      daysPerWeek: profile.daysPerWeek || 4,
-      targetTime: profile.targetTime || '',
-      raceDate: profile.raceDate || '',
-      userProfile: profile
-    });
+    return cloudPlan || null;
   });
 
-  // Sync cloud plan if loaded from backend
+  // Sync cloud plan if loaded from backend or local storage
   useEffect(() => {
     if (cloudPlan) {
       setCurrentPlan(cloudPlan);
@@ -106,18 +99,20 @@ export default function App() {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-y-auto max-h-screen pb-16 md:pb-0">
-        {/* Top Header Bar */}
-        <header className="h-14 bg-white border-b border-slate-200 px-4 sm:px-6 flex items-center justify-between shrink-0 sticky top-0 z-20">
-          <div className="flex items-center gap-3">
+        {/* Top Header Bar - iOS Notch & Dynamic Island safe */}
+        <header className="bg-white border-b border-slate-200 px-4 sm:px-6 pt-[max(0.6rem,env(safe-area-inset-top))] pb-3 sm:py-3.5 flex items-center justify-between shrink-0 sticky top-0 z-30 shadow-2xs">
+          <div className="flex items-center gap-2.5">
             <button
+              type="button"
               onClick={() => setMobileMenuOpen(true)}
-              className="md:hidden p-1.5 rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-100 cursor-pointer"
+              aria-label="Ouvrir le menu"
+              className="md:hidden p-2 -ml-1 rounded-lg text-slate-700 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 cursor-pointer shadow-2xs flex items-center justify-center shrink-0"
             >
-              <Menu className="w-5 h-5" />
+              <Menu className="w-5 h-5 text-slate-800 stroke-[2.2]" />
             </button>
 
-            <div className="flex items-center gap-2 text-xs text-slate-500 font-mono">
-              <span className="font-semibold text-slate-800">
+            <div className="flex items-center gap-1.5 text-xs text-slate-500 font-mono">
+              <span className="font-bold text-slate-900 text-[13px] sm:text-xs">
                 {activeTab === 'calendar' && 'Calendrier Mensuel'}
                 {activeTab === 'dashboard' && 'Vue Semaine & Adaptation'}
                 {activeTab === 'sync' && 'Connecteurs Montres'}
@@ -126,13 +121,13 @@ export default function App() {
                 {activeTab === 'profile' && 'Profil Athlète & Zones'}
               </span>
               <span className="hidden sm:inline">·</span>
-              <span className="hidden sm:inline">{currentPlan ? `${currentPlan.disciplineName} (${currentPlan.distanceLabel})` : 'Plan actif'}</span>
+              <span className="hidden sm:inline">{currentPlan ? `${currentPlan.disciplineName} (${currentPlan.distanceLabel})` : 'Aucun plan'}</span>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-600 font-mono hidden sm:inline">
-              Athlète : <strong className="text-slate-900">{profile.name || profile.email}</strong>
+            <span className="text-[11px] sm:text-xs text-slate-600 font-mono truncate max-w-[140px] sm:max-w-none">
+              <span className="hidden sm:inline">Athlète : </span><strong className="text-slate-900">{profile.name || profile.email}</strong>
             </span>
           </div>
         </header>
@@ -144,6 +139,7 @@ export default function App() {
               plan={currentPlan} 
               userProfile={profile} 
               onPlanUpdated={handlePlanUpdated}
+              onOpenGenerator={() => setActiveTab('generator')}
             />
           )}
 
@@ -153,6 +149,7 @@ export default function App() {
               userProfile={profile}
               onPlanUpdated={handlePlanUpdated}
               onOpenExports={() => setActiveTab('exports')}
+              onOpenGenerator={() => setActiveTab('generator')}
             />
           )}
 

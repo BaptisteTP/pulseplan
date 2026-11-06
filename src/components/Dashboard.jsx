@@ -20,11 +20,25 @@ import {
   ArrowRightLeft
 } from 'lucide-react';
 
-export default function Dashboard({ plan, userProfile, onPlanUpdated, onOpenExports }) {
+export default function Dashboard({ plan, userProfile, onPlanUpdated, onOpenExports, onOpenGenerator }) {
   if (!plan || !plan.weeks || plan.weeks.length === 0) {
     return (
-      <div className="py-16 text-center text-sm text-slate-500">
-        Aucun plan actif. Accédez à l'onglet "Générateur" pour créer un programme.
+      <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-10 text-center max-w-lg mx-auto shadow-xs my-6">
+        <div className="w-12 h-12 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center mx-auto text-slate-700 mb-3">
+          <Calendar className="w-6 h-6 text-slate-500" />
+        </div>
+        <h3 className="text-base font-bold text-slate-900">Aucun programme actif</h3>
+        <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
+          Pour visualiser vos séances à la semaine et ajuster votre charge, configurez d'abord un cycle.
+        </p>
+        {onOpenGenerator && (
+          <button
+            onClick={onOpenGenerator}
+            className="mt-4 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-semibold cursor-pointer shadow-xs active:scale-95"
+          >
+            Configurer un programme
+          </button>
+        )}
       </div>
     );
   }

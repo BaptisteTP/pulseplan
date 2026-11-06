@@ -29,6 +29,7 @@ const DEFAULT_PROFILE = {
 
 const STORAGE_KEY = 'pulseplan_athlete_profile';
 const AUTH_KEY = 'pulseplan_auth_token';
+const PLAN_KEY = 'pulseplan_active_plan';
 
 export function ProfileProvider({ children }) {
   const [user, setUser] = useState(() => {
@@ -49,7 +50,14 @@ export function ProfileProvider({ children }) {
     }
   });
 
-  const [cloudPlan, setCloudPlan] = useState(null);
+  const [cloudPlan, setCloudPlan] = useState(() => {
+    try {
+      const savedPlan = localStorage.getItem(PLAN_KEY);
+      return savedPlan ? JSON.parse(savedPlan) : null;
+    } catch {
+      return null;
+    }
+  });
 
   useEffect(() => {
     if (user && user.email) {
@@ -63,6 +71,7 @@ export function ProfileProvider({ children }) {
       fetchPlanFromBackend(user.email).then(remotePlan => {
         if (isMounted && remotePlan) {
           setCloudPlan(remotePlan);
+          localStorage.setItem(PLAN_KEY, JSON.stringify(remotePlan));
         }
       });
       return () => { isMounted = false; };
@@ -94,6 +103,7 @@ export function ProfileProvider({ children }) {
       }
       if (backendRes.currentPlan) {
         setCloudPlan(backendRes.currentPlan);
+        localStorage.setItem(PLAN_KEY, JSON.stringify(backendRes.currentPlan));
       }
     } else {
       authenticatedUser = {
@@ -118,10 +128,20 @@ export function ProfileProvider({ children }) {
     setCloudPlan(null);
     localStorage.removeItem(AUTH_KEY);
     localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(PLAN_KEY);
   };
 
   const saveUserPlan = (plan) => {
     setCloudPlan(plan);
+    try {
+      if (plan) {
+        localStorage.setItem(PLAN_KEY, JSON.stringify(plan));
+      } else {
+        localStorage.removeItem(PLAN_KEY);
+      }
+    } catch (e) {
+      console.warn("Storage quota or error saving plan locally", e);
+    }
     if (user?.email) {
       savePlanToBackend(user.email, plan);
     }

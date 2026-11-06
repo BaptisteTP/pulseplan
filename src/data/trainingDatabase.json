@@ -229,6 +229,50 @@
           { "name": "Footing continu très décontracté", "duration": "35 min", "zone": "Z1" },
           { "name": "Étirements légers et mobilité articulaire", "duration": "5 min", "zone": "Z1" }
         ]
+      },
+      {
+        "id": "run_taper_reactivation",
+        "title": "Affûtage - Déblocage Nerveux & Lignes Droites (J-3 ou J-4)",
+        "sport": "running",
+        "category": "taper",
+        "baseDurationMinutes": 30,
+        "intensity": "Z2 souple + 4 accélérations vives de 60m",
+        "description": "Séance spécifique d'affûtage pour conserver l'éveil neuromusculaire sans entamer les stocks de glycogène.",
+        "garminImpact": {
+          "primaryBenefit": "Fraîcheur & Réactivité Nerveuse",
+          "aerobicTE": 1.8,
+          "anaerobicTE": 1.5,
+          "epocRange": "Faible (25-35 ml/kg)",
+          "muscleAdaptation": "Surcompensation glycogénique et maintien de la commande motrice rapide",
+          "dominantFuel": "Lipides (70%)"
+        },
+        "steps": [
+          { "name": "Footing très souple", "duration": "20 min", "zone": "Z1-Z2" },
+          { "name": "4 x 60m relâché et vif (R=1 min marche)", "duration": "5 min", "zone": "Vitesse relâchée" },
+          { "name": "Retour au calme trot très léger", "duration": "5 min", "zone": "Z1" }
+        ]
+      },
+      {
+        "id": "run_taper_allure_rappel",
+        "title": "Affûtage - Rappel Allure Cible Court (3 x 1000m ou 4 min)",
+        "sport": "running",
+        "category": "taper",
+        "baseDurationMinutes": 40,
+        "intensity": "Allure Cible précise (maintien du tempo moteur)",
+        "description": "Rappel de sensations à l'allure spécifique de course avec volume divisé par deux pour créer la surcompensation.",
+        "garminImpact": {
+          "primaryBenefit": "Économie Allure Course & Fraîcheur",
+          "aerobicTE": 2.6,
+          "anaerobicTE": 0.8,
+          "epocRange": "Modéré-Faible (40-55 ml/kg)",
+          "muscleAdaptation": "Mémorisation kinesthésique du rythme de course sans fatigue résiduelle",
+          "dominantFuel": "Glycogène modéré"
+        },
+        "steps": [
+          { "name": "Échauffement progressif", "duration": "18 min", "zone": "Z1-Z2" },
+          { "name": "3 x 4 min allure cible précise (R=2 min trot souple)", "duration": "16 min", "zone": "Allure Course" },
+          { "name": "Retour au calme", "duration": "6 min", "zone": "Z1" }
+        ]
       }
     ],
     "cycling": [
@@ -384,6 +428,49 @@
           { "name": "Échauffement", "duration": "20 min", "zone": "Z2" },
           { "name": "2 x 25 min allure course spécifique (R=10 min Z2)", "duration": "60 min", "zone": "Z3 Allure Course" },
           { "name": "Retour d'endurance souple", "duration": "55 min", "zone": "Z1-Z2" }
+        ]
+      },
+      {
+        "id": "bike_recup",
+        "title": "Vélo - Décrassage & Récupération Active Z1",
+        "sport": "cycling",
+        "category": "recovery",
+        "baseDurationMinutes": 45,
+        "intensity": "Z1 (<55% FTP / Petit plateau 95-100 rpm)",
+        "description": "Séance régénérative pour éliminer les toxines et relancer le retour veineux sans fatigue cardiaque.",
+        "garminImpact": {
+          "primaryBenefit": "Récupération Active Vélo",
+          "aerobicTE": 1.4,
+          "anaerobicTE": 0.0,
+          "epocRange": "Très Faible (< 20 ml/kg)",
+          "muscleAdaptation": "Vascularisation des quadriceps sans chocs excentriques",
+          "dominantFuel": "Lipides purs"
+        },
+        "steps": [
+          { "name": "Moulinette très souple petit plateau", "duration": "40 min", "zone": "Z1" },
+          { "name": "Étirements légers sur le vélo", "duration": "5 min", "zone": "Z1" }
+        ]
+      },
+      {
+        "id": "bike_taper_reactivation",
+        "title": "Vélo - Déblocage d'Affûtage Pré-Course (J-2 ou J-3)",
+        "sport": "cycling",
+        "category": "taper",
+        "baseDurationMinutes": 45,
+        "intensity": "Z2 souple + 3 rappels d'allure 2 min",
+        "description": "Séance de réveil des jambes avant la course pour ouvrir les capillaires sanguins.",
+        "garminImpact": {
+          "primaryBenefit": "Affûtage & Fraîcheur Cycliste",
+          "aerobicTE": 2.0,
+          "anaerobicTE": 1.1,
+          "epocRange": "Faible (25-40 ml/kg)",
+          "muscleAdaptation": "Fluidité de pédalage et fraîcheur musculaire",
+          "dominantFuel": "Mixte doux"
+        },
+        "steps": [
+          { "name": "Échauffement progressif", "duration": "20 min", "zone": "Z1-Z2" },
+          { "name": "3 x 2 min allure course avec cadence 92 rpm (R=3 min Z1)", "duration": "15 min", "zone": "Allure Course" },
+          { "name": "Retour au calme petit plateau", "duration": "10 min", "zone": "Z1" }
         ]
       }
     ],

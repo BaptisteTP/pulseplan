@@ -387,104 +387,165 @@ function pickWorkoutForSlot({
     }
   }
 
-  // Running selection: Dynamic rotation based on weekNumber so workouts alternate
+  // Running selection: Dynamic rotation based on weekNumber, recovery weeks, and taper
   if (!template && disciplineKey === 'running') {
     const isWeekendLong = (dayIndex === 5 || dayIndex === 6 || dayIndex === targetSlots[targetSlots.length - 1]);
     
-    if (isWeekendLong) {
-      // Alternate between flat specific long run and undulating hill long run
-      template = (weekNumber % 2 === 0)
-        ? (library.running.find(w => w.id === 'run_long_ondulante') || library.running.find(w => w.id === 'run_long_run'))
-        : library.running.find(w => w.id === 'run_long_run');
-    } else if (dayIndex === targetSlots[0]) {
-      // Quality Slot 1: Alternate 30/30 VO2Max, Fartlek and VMA longue
-      if (isRecoveryWeek) {
-        template = library.running.find(w => w.id === 'run_recup');
-      } else if (weekNumber % 3 === 1) {
-        template = library.running.find(w => w.id === 'run_vma_short');
-      } else if (weekNumber % 3 === 2) {
-        template = library.running.find(w => w.id === 'run_fartlek_nature');
+    // TAPER (Affûtage dans les 2 dernières semaines)
+    if (phaseCategory === 'taper') {
+      if (isWeekendLong) {
+        template = library.running.find(w => w.id === 'run_taper_allure_rappel') || library.running.find(w => w.id === 'run_recup');
+      } else if (dayIndex === targetSlots[0]) {
+        template = library.running.find(w => w.id === 'run_taper_reactivation') || library.running.find(w => w.id === 'run_recup');
       } else {
-        template = library.running.find(w => w.id === 'run_vma_longue') || library.running.find(w => w.id === 'run_vma_short');
+        template = library.running.find(w => w.id === 'run_recup');
       }
-    } else if (dayIndex === targetSlots[1] && targetSlots.length >= 4) {
-      // Quality Slot 2 (Threshold / Tempo): Alternate Seuil blocs vs Progressif negative split
-      template = (weekNumber % 2 === 0)
-        ? (library.running.find(w => w.id === 'run_tempo_progressif') || library.running.find(w => w.id === 'run_tempo_seuil'))
-        : library.running.find(w => w.id === 'run_tempo_seuil');
-    } else {
-      // Aerobic endurance / recovery
-      template = library.running.find(w => w.id === 'run_ef_base');
+    } 
+    // RECOVERY WEEK (Semaine d'assimilation / décharge - ex: Semaines 4, 8, 12)
+    else if (isRecoveryWeek) {
+      if (isWeekendLong) {
+        // En semaine de décharge, la sortie longue est raccourcie en simple endurance Z2
+        template = library.running.find(w => w.id === 'run_ef_base');
+      } else if (dayIndex === targetSlots[0]) {
+        template = library.running.find(w => w.id === 'run_recup');
+      } else {
+        template = library.running.find(w => w.id === 'run_ef_base');
+      }
+    } 
+    // NORMAL & SPECIFIC WEEKS
+    else {
+      if (isWeekendLong) {
+        // Alternate between flat specific long run, undulating hill long run, and aerobic base
+        if (weekNumber % 3 === 1) {
+          template = library.running.find(w => w.id === 'run_long_run');
+        } else if (weekNumber % 3 === 2) {
+          template = library.running.find(w => w.id === 'run_long_ondulante') || library.running.find(w => w.id === 'run_long_run');
+        } else {
+          template = library.running.find(w => w.id === 'run_ef_base');
+        }
+      } else if (dayIndex === targetSlots[0]) {
+        // Quality Slot 1: Alternate 30/30 VO2Max, Fartlek and VMA longue
+        if (weekNumber % 3 === 1) {
+          template = library.running.find(w => w.id === 'run_vma_short');
+        } else if (weekNumber % 3 === 2) {
+          template = library.running.find(w => w.id === 'run_fartlek_nature');
+        } else {
+          template = library.running.find(w => w.id === 'run_vma_longue') || library.running.find(w => w.id === 'run_vma_short');
+        }
+      } else if (dayIndex === targetSlots[1] && targetSlots.length >= 4) {
+        // Quality Slot 2 (Threshold / Tempo): Alternate Seuil blocs vs Progressif negative split
+        template = (weekNumber % 2 === 0)
+          ? (library.running.find(w => w.id === 'run_tempo_progressif') || library.running.find(w => w.id === 'run_tempo_seuil'))
+          : library.running.find(w => w.id === 'run_tempo_seuil');
+      } else {
+        // Aerobic endurance / recovery
+        template = library.running.find(w => w.id === 'run_ef_base');
+      }
     }
   }
 
-  // Triathlon selection: swimming according to level + bike variation + bricks
+  // Triathlon selection: swimming according to level + bike variation + bricks + taper/recovery
   if (!template && disciplineKey === 'triathlon') {
     const swimPool = library.swimming[swimLevel] || library.swimming['intermediaire'];
 
-    if (dayIndex === 5) {
-      // Weekend Long Ride: Rotate between endurance, tempo tri, and force/vélocité
-      if (weekNumber % 3 === 1) {
-        template = library.cycling.find(w => w.id === 'bike_long_endurance');
-      } else if (weekNumber % 3 === 2) {
-        template = library.cycling.find(w => w.id === 'bike_long_tempo_tri') || library.cycling.find(w => w.id === 'bike_long_endurance');
+    if (phaseCategory === 'taper') {
+      if (dayIndex === 5) {
+        template = library.cycling.find(w => w.id === 'bike_taper_reactivation') || library.cycling.find(w => w.id === 'bike_recup');
+      } else if (dayIndex === 6) {
+        template = library.running.find(w => w.id === 'run_taper_reactivation') || library.running.find(w => w.id === 'run_recup');
+      } else if (dayIndex === targetSlots[0]) {
+        template = swimPool[0];
       } else {
-        template = library.cycling.find(w => w.id === 'bike_force_velocite') || library.cycling.find(w => w.id === 'bike_long_endurance');
+        template = library.cycling.find(w => w.id === 'bike_recup') || library.running.find(w => w.id === 'run_recup');
       }
-    } else if (dayIndex === 6) {
-      // Sunday: In specific phase, rotate brick workouts; otherwise alternate long run and undulating
-      if (phase.includes('Spécifique') && library.brick?.length && (weekNumber % 2 === 1)) {
-        // Alternate between standard brick and multi-enchaînement
-        template = (weekNumber % 4 === 1)
-          ? library.brick[0] // brick_transition
-          : (library.brick[1] || library.brick[0]); // brick_courte_dynamique
+    } else if (isRecoveryWeek) {
+      if (dayIndex === 5) {
+        template = library.cycling.find(w => w.id === 'bike_recup') || library.cycling.find(w => w.id === 'bike_z2_endurance');
+      } else if (dayIndex === 6) {
+        template = library.running.find(w => w.id === 'run_recup') || library.running.find(w => w.id === 'run_ef_base');
+      } else if (dayIndex === targetSlots[0]) {
+        template = swimPool[0]; // Technique / aisance
       } else {
-        template = (weekNumber % 2 === 0)
-          ? (library.running.find(w => w.id === 'run_long_ondulante') || library.running.find(w => w.id === 'run_long_run'))
-          : library.running.find(w => w.id === 'run_long_run');
+        template = library.cycling.find(w => w.id === 'bike_z2_endurance');
       }
-    } else if (dayIndex === targetSlots[0]) {
-      // Swim session rotated through the 3 variations of the chosen level
-      template = swimPool[weekNumber % swimPool.length] || swimPool[0];
     } else {
-      // Midweek Quality Slot (Cycling or Running): Rotate between SweetSpot, PMA VO2, Seuil Over-Under, or Running Fartlek
-      if (weekNumber % 4 === 1) {
-        template = library.cycling.find(w => w.id === 'bike_sweetspot');
-      } else if (weekNumber % 4 === 2) {
-        template = library.cycling.find(w => w.id === 'bike_pma_vo2') || library.cycling.find(w => w.id === 'bike_sweetspot');
-      } else if (weekNumber % 4 === 3) {
-        template = library.cycling.find(w => w.id === 'bike_seuil_over_under') || library.cycling.find(w => w.id === 'bike_sweetspot');
+      if (dayIndex === 5) {
+        // Weekend Long Ride: Rotate between endurance, tempo tri, and force/vélocité
+        if (weekNumber % 3 === 1) {
+          template = library.cycling.find(w => w.id === 'bike_long_endurance');
+        } else if (weekNumber % 3 === 2) {
+          template = library.cycling.find(w => w.id === 'bike_long_tempo_tri') || library.cycling.find(w => w.id === 'bike_long_endurance');
+        } else {
+          template = library.cycling.find(w => w.id === 'bike_force_velocite') || library.cycling.find(w => w.id === 'bike_long_endurance');
+        }
+      } else if (dayIndex === 6) {
+        // Sunday: In specific phase, rotate brick workouts; otherwise alternate long run and undulating
+        if (phase.includes('Spécifique') && library.brick?.length && (weekNumber % 2 === 1)) {
+          template = (weekNumber % 4 === 1)
+            ? library.brick[0]
+            : (library.brick[1] || library.brick[0]);
+        } else {
+          template = (weekNumber % 2 === 0)
+            ? (library.running.find(w => w.id === 'run_long_ondulante') || library.running.find(w => w.id === 'run_long_run'))
+            : library.running.find(w => w.id === 'run_long_run');
+        }
+      } else if (dayIndex === targetSlots[0]) {
+        template = swimPool[weekNumber % swimPool.length] || swimPool[0];
       } else {
-        template = library.running.find(w => w.id === 'run_fartlek_nature') || library.running[0];
+        // Midweek Quality Slot: Rotate between SweetSpot, PMA VO2, Seuil Over-Under, or Running Fartlek
+        if (weekNumber % 4 === 1) {
+          template = library.cycling.find(w => w.id === 'bike_sweetspot');
+        } else if (weekNumber % 4 === 2) {
+          template = library.cycling.find(w => w.id === 'bike_pma_vo2') || library.cycling.find(w => w.id === 'bike_sweetspot');
+        } else if (weekNumber % 4 === 3) {
+          template = library.cycling.find(w => w.id === 'bike_seuil_over_under') || library.cycling.find(w => w.id === 'bike_sweetspot');
+        } else {
+          template = library.running.find(w => w.id === 'run_fartlek_nature') || library.running[0];
+        }
       }
     }
   }
 
-  // Trail selection: Rotate through all 5 trail-specific workouts
+  // Trail selection: Rotate through trail-specific workouts + recovery & taper handling
   if (!template && disciplineKey === 'trail') {
     const isWeekendLong = (dayIndex === 5 || dayIndex === 6 || dayIndex === targetSlots[targetSlots.length - 1]);
-    if (isWeekendLong) {
-      // Long run weekend: Alternate D+ cumulated and technical downhill / eccentric loading
-      template = (weekNumber % 2 === 0)
-        ? (library.trail.find(w => w.id === 'trail_descente_technique') || library.trail.find(w => w.id === 'trail_long_dplus'))
-        : library.trail.find(w => w.id === 'trail_long_dplus');
-    } else if (dayIndex === targetSlots[0]) {
-      // Quality Slot 1: Rotate Short PMA hills, Long Threshold climbs (3x10'), and Single Track surges
-      if (weekNumber % 3 === 1) {
-        template = library.trail.find(w => w.id === 'trail_cote_pma');
-      } else if (weekNumber % 3 === 2) {
-        template = library.trail.find(w => w.id === 'trail_cote_longue_seuil') || library.trail.find(w => w.id === 'trail_cote_pma');
+    
+    if (phaseCategory === 'taper') {
+      if (isWeekendLong) {
+        template = library.running.find(w => w.id === 'run_taper_reactivation') || library.running.find(w => w.id === 'run_recup');
       } else {
-        template = library.trail.find(w => w.id === 'trail_tempo_single') || library.trail.find(w => w.id === 'trail_cote_pma');
+        template = library.running.find(w => w.id === 'run_recup');
+      }
+    } else if (isRecoveryWeek) {
+      if (isWeekendLong) {
+        template = library.running.find(w => w.id === 'run_ef_base');
+      } else {
+        template = library.running.find(w => w.id === 'run_recup');
       }
     } else {
-      // Quality Slot 2 / Aerobic base: Alternate Single track tempo, fartlek nature, and aerobic running
-      if (weekNumber % 3 === 1) {
-        template = library.trail.find(w => w.id === 'trail_tempo_single') || library.trail.find(w => w.id === 'trail_cote_pma');
-      } else if (weekNumber % 3 === 2) {
-        template = library.running.find(w => w.id === 'run_fartlek_nature') || library.running[0];
+      if (isWeekendLong) {
+        // Long run weekend: Alternate D+ cumulated and technical downhill / eccentric loading
+        template = (weekNumber % 2 === 0)
+          ? (library.trail.find(w => w.id === 'trail_descente_technique') || library.trail.find(w => w.id === 'trail_long_dplus'))
+          : library.trail.find(w => w.id === 'trail_long_dplus');
+      } else if (dayIndex === targetSlots[0]) {
+        // Quality Slot 1: Rotate Short PMA hills, Long Threshold climbs (3x10'), and Single Track surges
+        if (weekNumber % 3 === 1) {
+          template = library.trail.find(w => w.id === 'trail_cote_pma');
+        } else if (weekNumber % 3 === 2) {
+          template = library.trail.find(w => w.id === 'trail_cote_longue_seuil') || library.trail.find(w => w.id === 'trail_cote_pma');
+        } else {
+          template = library.trail.find(w => w.id === 'trail_tempo_single') || library.trail.find(w => w.id === 'trail_cote_pma');
+        }
       } else {
-        template = library.running.find(w => w.id === 'run_ef_base') || library.running[0];
+        // Quality Slot 2 / Aerobic base: Alternate Single track tempo, fartlek nature, and aerobic running
+        if (weekNumber % 3 === 1) {
+          template = library.trail.find(w => w.id === 'trail_tempo_single') || library.trail.find(w => w.id === 'trail_cote_pma');
+        } else if (weekNumber % 3 === 2) {
+          template = library.running.find(w => w.id === 'run_fartlek_nature') || library.running[0];
+        } else {
+          template = library.running.find(w => w.id === 'run_ef_base') || library.running[0];
+        }
       }
     }
   }
