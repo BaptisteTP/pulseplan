@@ -7,10 +7,13 @@ import GeneratorForm from './components/GeneratorForm';
 import ExportPanel from './components/ExportPanel';
 import ProfileModal from './components/ProfileModal';
 import AuthScreen from './components/AuthScreen';
+import TrainingZonesView from './components/TrainingZonesView';
+import FitnessFatigueView from './components/FitnessFatigueView';
+import RaceNutritionStrategy from './components/RaceNutritionStrategy';
 import { useProfile } from './context/ProfileContext';
 import { generateTrainingPlan } from './services/planGenerator';
 import { checkBackendHealth } from './services/api';
-import { Menu, X, Calendar as CalendarIcon, LayoutGrid, Sliders, Wifi, User } from 'lucide-react';
+import { Menu, X, Calendar as CalendarIcon, LayoutGrid, Sliders, Wifi, User, Gauge, Utensils, TrendingUp } from 'lucide-react';
 
 export default function App() {
   const { profile, isAuthenticated, cloudPlan, saveUserPlan } = useProfile();
@@ -114,11 +117,14 @@ export default function App() {
             <div className="flex items-center gap-1.5 text-xs text-slate-500">
               <span className="font-bold text-slate-900 text-[13px] sm:text-xs">
                 {activeTab === 'calendar' && 'Calendrier Mensuel'}
-                {activeTab === 'dashboard' && 'Vue Semaine & Adaptation'}
+                {activeTab === 'dashboard' && 'Vue Semaine & Séances'}
+                {activeTab === 'zones' && 'Zones d\'Allures & Watts Cibles'}
+                {activeTab === 'fitness' && 'Charge, Forme & Fatigue (CTL/ATL)'}
+                {activeTab === 'nutrition' && 'Nutrition Course & Sac de Transition'}
                 {activeTab === 'sync' && 'Connecteurs Montres'}
                 {activeTab === 'generator' && 'Générateur d\'Entraînement'}
                 {activeTab === 'exports' && 'Exports Fichiers'}
-                {activeTab === 'profile' && 'Profil Athlète & Zones'}
+                {activeTab === 'profile' && 'Profil Athlète & Métriques'}
               </span>
               <span className="hidden sm:inline">·</span>
               <span className="hidden sm:inline text-slate-600 font-medium">{currentPlan ? `${currentPlan.disciplineName} (${currentPlan.distanceLabel})` : 'Aucun plan'}</span>
@@ -153,6 +159,18 @@ export default function App() {
             />
           )}
 
+          {activeTab === 'zones' && (
+            <TrainingZonesView />
+          )}
+
+          {activeTab === 'fitness' && (
+            <FitnessFatigueView plan={currentPlan} />
+          )}
+
+          {activeTab === 'nutrition' && (
+            <RaceNutritionStrategy plan={currentPlan} />
+          )}
+
           {activeTab === 'sync' && (
             <WatchSyncModal 
               plan={currentPlan} 
@@ -177,55 +195,65 @@ export default function App() {
       </div>
 
       {/* iOS Native Bottom Bar with safe area padding */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 flex items-center justify-around py-2.5 px-2 pb-[max(0.65rem,env(safe-area-inset-bottom))] z-40 shadow-lg">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 flex items-center justify-around py-2 px-1 pb-[max(0.65rem,env(safe-area-inset-bottom))] z-40 shadow-lg">
         <button
           onClick={() => setActiveTab('calendar')}
-          className={`flex flex-col items-center gap-1 min-w-[50px] py-1 text-[10px] font-medium transition-colors cursor-pointer active:scale-95 ${
+          className={`flex flex-col items-center gap-1 min-w-[44px] py-1 text-[9px] font-medium transition-colors cursor-pointer active:scale-95 ${
             activeTab === 'calendar' ? 'text-slate-900 font-bold' : 'text-slate-400'
           }`}
         >
-          <CalendarIcon className={`w-5 h-5 ${activeTab === 'calendar' ? 'stroke-[2.5]' : ''}`} />
+          <CalendarIcon className={`w-4 h-4 ${activeTab === 'calendar' ? 'stroke-[2.5]' : ''}`} />
           <span>Mois</span>
         </button>
 
         <button
           onClick={() => setActiveTab('dashboard')}
-          className={`flex flex-col items-center gap-1 min-w-[50px] py-1 text-[10px] font-medium transition-colors cursor-pointer active:scale-95 ${
+          className={`flex flex-col items-center gap-1 min-w-[44px] py-1 text-[9px] font-medium transition-colors cursor-pointer active:scale-95 ${
             activeTab === 'dashboard' ? 'text-slate-900 font-bold' : 'text-slate-400'
           }`}
         >
-          <LayoutGrid className={`w-5 h-5 ${activeTab === 'dashboard' ? 'stroke-[2.5]' : ''}`} />
+          <LayoutGrid className={`w-4 h-4 ${activeTab === 'dashboard' ? 'stroke-[2.5]' : ''}`} />
           <span>Semaine</span>
         </button>
 
         <button
+          onClick={() => setActiveTab('zones')}
+          className={`flex flex-col items-center gap-1 min-w-[44px] py-1 text-[9px] font-medium transition-colors cursor-pointer active:scale-95 ${
+            activeTab === 'zones' ? 'text-slate-900 font-bold' : 'text-slate-400'
+          }`}
+        >
+          <Gauge className={`w-4 h-4 ${activeTab === 'zones' ? 'stroke-[2.5]' : ''}`} />
+          <span>Zones</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('fitness')}
+          className={`flex flex-col items-center gap-1 min-w-[44px] py-1 text-[9px] font-medium transition-colors cursor-pointer active:scale-95 ${
+            activeTab === 'fitness' ? 'text-slate-900 font-bold' : 'text-slate-400'
+          }`}
+        >
+          <TrendingUp className={`w-4 h-4 ${activeTab === 'fitness' ? 'stroke-[2.5]' : ''}`} />
+          <span>Forme</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('nutrition')}
+          className={`flex flex-col items-center gap-1 min-w-[44px] py-1 text-[9px] font-medium transition-colors cursor-pointer active:scale-95 ${
+            activeTab === 'nutrition' ? 'text-slate-900 font-bold' : 'text-slate-400'
+          }`}
+        >
+          <Utensils className={`w-4 h-4 ${activeTab === 'nutrition' ? 'stroke-[2.5]' : ''}`} />
+          <span>Nutrition</span>
+        </button>
+
+        <button
           onClick={() => setActiveTab('sync')}
-          className={`flex flex-col items-center gap-1 min-w-[50px] py-1 text-[10px] font-medium transition-colors cursor-pointer active:scale-95 ${
+          className={`flex flex-col items-center gap-1 min-w-[44px] py-1 text-[9px] font-medium transition-colors cursor-pointer active:scale-95 ${
             activeTab === 'sync' ? 'text-slate-900 font-bold' : 'text-slate-400'
           }`}
         >
-          <Wifi className={`w-5 h-5 ${activeTab === 'sync' ? 'stroke-[2.5]' : ''}`} />
+          <Wifi className={`w-4 h-4 ${activeTab === 'sync' ? 'stroke-[2.5]' : ''}`} />
           <span>Montre</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('generator')}
-          className={`flex flex-col items-center gap-1 min-w-[50px] py-1 text-[10px] font-medium transition-colors cursor-pointer active:scale-95 ${
-            activeTab === 'generator' ? 'text-slate-900 font-bold' : 'text-slate-400'
-          }`}
-        >
-          <Sliders className={`w-5 h-5 ${activeTab === 'generator' ? 'stroke-[2.5]' : ''}`} />
-          <span>Générateur</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('profile')}
-          className={`flex flex-col items-center gap-1 min-w-[50px] py-1 text-[10px] font-medium transition-colors cursor-pointer active:scale-95 ${
-            activeTab === 'profile' ? 'text-slate-900 font-bold' : 'text-slate-400'
-          }`}
-        >
-          <User className={`w-5 h-5 ${activeTab === 'profile' ? 'stroke-[2.5]' : ''}`} />
-          <span>Profil</span>
         </button>
       </div>
     </div>

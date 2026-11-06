@@ -12,7 +12,12 @@ import {
   Mountain,
   Compass,
   Activity,
-  ArrowRightLeft
+  ArrowRightLeft,
+  CheckCircle,
+  Circle,
+  Smile,
+  Meh,
+  Frown
 } from 'lucide-react';
 
 export default function WorkoutCard({ 
@@ -21,11 +26,35 @@ export default function WorkoutCard({
   weekNumber, 
   onMoveWorkout, 
   allDays = [], 
-  currentDayIndex = 0 
+  currentDayIndex = 0,
+  onToggleComplete
 }) {
   const [showSteps, setShowSteps] = useState(false);
   const [showMoveMenu, setShowMoveMenu] = useState(false);
   const [downloaded, setDownloaded] = useState(false);
+  const [showRpeSelector, setShowRpeSelector] = useState(false);
+  const [isDone, setIsDone] = useState(Boolean(workout?.completed));
+  const [rpe, setRpe] = useState(workout?.rpe || null);
+
+  const handleToggle = () => {
+    const nextState = !isDone;
+    setIsDone(nextState);
+    if (nextState) {
+      setShowRpeSelector(true);
+    }
+    if (workout) {
+      workout.completed = nextState;
+      if (!nextState) workout.rpe = null;
+    }
+  };
+
+  const handleSelectRpe = (val) => {
+    setRpe(val);
+    if (workout) {
+      workout.rpe = val;
+    }
+    setShowRpeSelector(false);
+  };
 
   if (!workout) {
     return (
@@ -109,14 +138,37 @@ export default function WorkoutCard({
 
   return (
     <div className={`min-h-[235px] bg-white border transition-all rounded-xl p-3.5 flex flex-col justify-between text-xs shadow-xs hover:shadow-sm relative ${
-      isTest ? 'border-purple-300 ring-1 ring-purple-100 bg-purple-50/10' : 'border-slate-200/90 hover:border-slate-300'
+      isDone 
+        ? 'border-emerald-300 ring-1 ring-emerald-100 bg-emerald-50/20' 
+        : isTest 
+        ? 'border-purple-300 ring-1 ring-purple-100 bg-purple-50/10' 
+        : 'border-slate-200/90 hover:border-slate-300'
     }`}>
       <div>
-        {/* Header: Day & Sport badge */}
+        {/* Header: Day, Completion Checkbox & Sport badge */}
         <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-          <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">
-            {dayName}
-          </span>
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={handleToggle}
+              title={isDone ? 'Marquer comme non fait' : 'Valider la séance'}
+              className="text-slate-400 hover:text-emerald-600 transition-colors cursor-pointer"
+            >
+              {isDone ? (
+                <CheckCircle className="w-4 h-4 text-emerald-600 fill-emerald-100" />
+              ) : (
+                <Circle className="w-4 h-4 text-slate-300 hover:text-slate-500" />
+              )}
+            </button>
+            <span className={`text-[11px] font-bold uppercase tracking-wider ${isDone ? 'text-emerald-800' : 'text-slate-700'}`}>
+              {dayName}
+            </span>
+            {isDone && (
+              <span className="text-[9px] font-bold px-1.5 py-0.2 bg-emerald-100 text-emerald-800 rounded">
+                Fait {rpe ? `· RPE ${rpe}/10` : ''}
+              </span>
+            )}
+          </div>
 
           <div className="flex items-center gap-1.5">
             <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border ${sportInfo.badge}`}>
@@ -216,6 +268,38 @@ export default function WorkoutCard({
         <p className="mt-2 text-[11px] text-slate-600 line-clamp-2 leading-relaxed">
           {workout.description}
         </p>
+
+        {/* RPE Feedback Quick Selector Modal/Popover */}
+        {showRpeSelector && (
+          <div className="mt-2.5 p-2 bg-slate-900 text-white rounded-lg text-xs space-y-1.5 animate-in fade-in">
+            <div className="flex items-center justify-between text-[10px]">
+              <span className="font-semibold text-slate-300">Ressenti de l'effort (RPE) :</span>
+              <button 
+                type="button"
+                onClick={() => setShowRpeSelector(false)} 
+                className="text-slate-400 hover:text-white"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="grid grid-cols-5 gap-1 text-[10px] text-center">
+              {[2, 4, 6, 8, 10].map(val => (
+                <button
+                  key={val}
+                  type="button"
+                  onClick={() => handleSelectRpe(val)}
+                  className={`py-1 rounded font-bold cursor-pointer transition-colors ${
+                    val <= 4 ? 'bg-emerald-700/80 hover:bg-emerald-600' :
+                    val <= 6 ? 'bg-sky-700/80 hover:bg-sky-600' :
+                    val <= 8 ? 'bg-amber-700/80 hover:bg-amber-600' : 'bg-rose-700/80 hover:bg-rose-600'
+                  }`}
+                >
+                  {val}/10
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Collapsible Steps list & Muscle adaptation */}
         {showSteps && (

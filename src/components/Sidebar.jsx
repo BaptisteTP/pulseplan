@@ -9,7 +9,10 @@ import {
   Activity, 
   ChevronRight,
   Server,
-  LogOut
+  LogOut,
+  Gauge,
+  TrendingUp,
+  Utensils
 } from 'lucide-react';
 import { useSync } from '../context/SyncContext';
 import { useProfile } from '../context/ProfileContext';
@@ -31,6 +34,26 @@ export default function Sidebar({ activeTab, setActiveTab, currentPlan, backendS
       label: 'Vue Semaine & Séances', 
       icon: LayoutGrid,
       desc: 'Microcycles & détails jours'
+    },
+    { 
+      id: 'zones', 
+      label: 'Zones Allures & Watts', 
+      icon: Gauge,
+      badge: 'Z1 à Z5',
+      badgeColor: 'bg-rose-50 text-rose-700 border-rose-200',
+      desc: 'VMA, FC Max, FTP Vélo'
+    },
+    { 
+      id: 'fitness', 
+      label: 'Charge & Forme (CTL)', 
+      icon: TrendingUp,
+      desc: 'Fatigue & Pic de forme'
+    },
+    { 
+      id: 'nutrition', 
+      label: 'Nutrition & Checklist', 
+      icon: Utensils,
+      desc: 'Apports g/h & Jour J'
     },
     { 
       id: 'sync', 
@@ -56,7 +79,7 @@ export default function Sidebar({ activeTab, setActiveTab, currentPlan, backendS
       id: 'profile', 
       label: 'Profil & Métriques', 
       icon: User,
-      desc: 'VMA, FTP, FC Max'
+      desc: 'Compte & Préférences'
     }
   ];
 
