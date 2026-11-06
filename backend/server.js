@@ -1,5 +1,10 @@
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -7,7 +12,7 @@ const PORT = process.env.PORT || 3001;
 app.use(cors({ origin: '*' }));
 app.use(express.json());
 
-// In-memory data store (can be plugged to PostgreSQL / SQLite via Prisma)
+// In-memory data store
 let athleteProfile = {
   name: 'Alexandre Renard',
   email: 'alex.renard@endurance.io',
@@ -23,12 +28,10 @@ let athleteProfile = {
 };
 
 let connectedDevices = {
-  garmin: { id: 'garmin', name: 'Garmin Connect', connected: true, accountName: 'alex.renard@garmin.com', lastSync: new Date().toISOString() },
+  garmin: { id: 'garmin', name: 'Garmin Connect', connected: false, accountName: null, lastSync: null },
   coros: { id: 'coros', name: 'COROS Training Hub', connected: false, accountName: null, lastSync: null },
   wahoo: { id: 'wahoo', name: 'Wahoo Cloud API', connected: false, accountName: null, lastSync: null }
 };
-
-let activePlans = [];
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -38,6 +41,11 @@ app.get('/api/health', (req, res) => {
     service: 'PulsePlan Backend API',
     timestamp: new Date().toISOString()
   });
+});
+
+// Privacy policy endpoint directly on the backend
+app.get('/privacy', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/privacy.html'));
 });
 
 // Profile endpoints
@@ -87,7 +95,6 @@ app.post('/api/sync/push-plan', (req, res) => {
     return res.status(400).json({ success: false, message: 'Aucun appareil connecté.' });
   }
 
-  // Update last sync on all connected devices
   const now = new Date().toISOString();
   Object.keys(connectedDevices).forEach(k => {
     if (connectedDevices[k].connected) {
