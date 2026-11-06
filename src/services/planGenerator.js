@@ -1,0 +1,462 @@
+import database from '../data/trainingDatabase.json';
+
+/**
+ * PulsePlan Coach Engine
+ * 1. Target Time parsing & calculation of race pace required
+ * 2. Athletic Baseline Calibration Week (Week 1 includes standardized test workouts)
+ * 3. Cycling: Power (Watts) if power meter available, otherwise RPE / Heart Rate / Cadence Test
+ * 4. Garmin-style Physiological Impact (Aerobic TE, Anaerobic TE, Primary Benefit, Muscle Adaptation, Fuel)
+ */
+
+export const DAYS_OF_WEEK = [
+  'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'
+];
+
+const SCHEDULE_TEMPLATES = {
+  3: [1, 3, 5],            // Mardi, Jeudi, Samedi
+  4: [1, 3, 5, 6],         // Mardi, Jeudi, Samedi, Dimanche
+  5: [1, 2, 4, 5, 6],      // Mardi, Mercredi, Vendredi, Samedi, Dimanche
+  6: [0, 1, 2, 3, 5, 6]    // Lundi, Mardi, Mercredi, Jeudi, Samedi, Dimanche
+};
+
+const EVENT_DISTANCES_KM = {
+  '5k': 5.0,
+  '10k': 10.0,
+  'semi': 21.0975,
+  'marathon': 42.195,
+  's': 25.75,
+  'm': 51.5,
+  '70.3': 113.0,
+  'ironman': 226.0,
+  'court': 20.0,
+  '50k': 50.0,
+  'ultra': 105.0
+};
+
+export const DEFAULT_TARGET_TIMES = {
+  '5k': '00:22:30',
+  '10k': '00:45:00',
+  'semi': '01:40:00',
+  'marathon': '03:30:00',
+  's': '01:15:00',
+  'm': '02:30:00',
+  '70.3': '05:15:00',
+  'ironman': '11:30:00',
+  'court': '02:00:00',
+  '50k': '05:45:00',
+  'ultra': '16:00:00'
+};
+
+export function getDisciplineMetadata() {
+  return database.disciplines;
+}
+
+export function parseTimeToMinutes(timeStr) {
+  if (!timeStr) return 0;
+  const parts = timeStr.split(':').map(Number);
+  if (parts.length === 3) {
+    return parts[0] * 60 + parts[1] + parts[2] / 60;
+  }
+  if (parts.length === 2) {
+    return parts[0] * 60 + parts[1];
+  }
+  return 0;
+}
+
+export function calculateRequiredPace(distanceKey, targetTimeStr) {
+  const distanceKm = EVENT_DISTANCES_KM[distanceKey];
+  const minutes = parseTimeToMinutes(targetTimeStr);
+  if (!distanceKm || !minutes) return null;
+
+  const minPerKm = minutes / distanceKm;
+  const speedKmh = (distanceKm / (minutes / 60)).toFixed(1);
+
+  const min = Math.floor(minPerKm);
+  const sec = Math.round((minPerKm - min) * 60);
+  const formattedPace = `${min}'${sec < 10 ? '0' : ''}${sec}" /km`;
+
+  return {
+    minPerKm,
+    formattedPace,
+    speedKmh
+  };
+}
+
+/**
+ * Standardized Benchmark Test Workouts for Week 1 (Athletic Baseline Calibration)
+ */
+const BASELINE_TEST_WORKOUTS = {
+  running: {
+    id: 'test_demi_cooper',
+    title: 'Test Demi-Cooper 6 min (Calibration VMA)',
+    sport: 'running',
+    category: 'test',
+    priority: 1,
+    baseDurationMinutes: 45,
+    intensity: 'Allure maximale soutenue 6 min',
+    description: 'Test étalon pour déterminer précisément votre VMA actuelle et ajuster toutes les allures de votre préparation.',
+    garminImpact: {
+      primaryBenefit: "Étalonnage VO2 Max",
+      aerobicTE: 3.5,
+      anaerobicTE: 3.8,
+      epocRange: "Élevé (100-125 ml/kg)",
+      muscleAdaptation: "Recrutement neuro-musculaire maximal et débit cardiaque de pointe",
+      dominantFuel: "Glycogène pur (90%)"
+    },
+    steps: [
+      { name: 'Échauffement progressif en aisance respiratoire', duration: '20 min', zone: 'Z1-Z2' },
+      { name: '3 lignes droites accélérées + 2 min repos', duration: '5 min', zone: 'Z4' },
+      { name: 'TEST DEMI-COOPER : 6 minutes à distance maximale', duration: '6 min', zone: 'Test VMA' },
+      { name: 'Retour au calme trot très lent & récupération', duration: '14 min', zone: 'Z1' }
+    ],
+    personalizedPace: 'Notez la distance : Mètres divisés par 100 = votre VMA exacte'
+  },
+  cycling_power: {
+    id: 'test_ftp_20min',
+    title: 'Test FTP 20 min (Calibration Capteur de Puissance)',
+    sport: 'cycling',
+    category: 'test',
+    priority: 1,
+    baseDurationMinutes: 60,
+    intensity: 'Effort maximal régulier 20 min',
+    description: 'Test référence avec capteur de puissance. La puissance moyenne sur 20 min x 0.95 définit votre FTP.',
+    garminImpact: {
+      primaryBenefit: "Étalonnage Puissance FTP",
+      aerobicTE: 4.0,
+      anaerobicTE: 2.5,
+      epocRange: "Très Élevé (120-145 ml/kg)",
+      muscleAdaptation: "Seuil de puissance critique neuromusculaire sur 60 minutes",
+      dominantFuel: "Glycogène (85%)"
+    },
+    steps: [
+      { name: 'Échauffement progressif 85-90 rpm', duration: '20 min', zone: 'Z1-Z2' },
+      { name: 'Déblocage : 3 x (1 min 100% FTP / 1 min souple)', duration: '6 min', zone: 'Z4' },
+      { name: 'TEST FTP : 20 min à effort maximal constant', duration: '20 min', zone: 'Test FTP' },
+      { name: 'Molinette souple de décrassage', duration: '14 min', zone: 'Z1' }
+    ],
+    personalizedPace: 'FTP calculée = Puissance moyenne sur 20 min x 0.95'
+  },
+  cycling_no_power: {
+    id: 'test_col_fcm',
+    title: 'Test FC Seuil & Fréquence de Pédalage (Sans Capteur de Puissance)',
+    sport: 'cycling',
+    category: 'test',
+    priority: 1,
+    baseDurationMinutes: 60,
+    intensity: 'Montée rythmée ou plat vent de face (RPE 8/10)',
+    description: 'Pour calibrer vos séances vélo sans capteur de puissance : repérage de votre Fréquence Cardiaque au seuil et ressenti d\'effort (RPE) à 90 rpm.',
+    garminImpact: {
+      primaryBenefit: "Étalonnage FC & Seuil Perçu",
+      aerobicTE: 3.8,
+      anaerobicTE: 2.0,
+      epocRange: "Élevé (90-115 ml/kg)",
+      muscleAdaptation: "Repérage des seuils ventilatoires et cardiaques sans puissance",
+      dominantFuel: "Glycogène (80%)"
+    },
+    steps: [
+      { name: 'Mise en jambe progressive en moulinant', duration: '20 min', zone: 'Aérobie' },
+      { name: 'TEST SANS WATTS : 15 min en côte ou tempo soutenable (parole impossible)', duration: '15 min', zone: 'FC Seuil (88-92% FCM)' },
+      { name: 'Contrôle cardiaque : notez votre FC moyenne sur les 10 dernières minutes', duration: '5 min', zone: 'Relevé' },
+      { name: 'Retour au calme en petit plateau', duration: '20 min', zone: 'Z1' }
+    ],
+    personalizedPace: 'Séances vélo guidées à la Fréquence Cardiaque et au RPE (Échelle 1-10)'
+  },
+  swimming: {
+    id: 'test_css_swim',
+    title: 'Test Natation CSS (Vitesse Critique 400m + 200m)',
+    sport: 'swimming',
+    category: 'test',
+    priority: 1,
+    baseDurationMinutes: 50,
+    intensity: 'Chronos 400m et 200m chrono',
+    description: 'Calcul de votre allure CSS (Critical Swim Speed) pour calibrer les séries de fractionné natation.',
+    garminImpact: {
+      primaryBenefit: "Étalonnage Allure CSS",
+      aerobicTE: 3.6,
+      anaerobicTE: 2.8,
+      epocRange: "Élevé (80-105 ml/kg)",
+      muscleAdaptation: "Vitesse critique de maintien technique sans perte de glisse",
+      dominantFuel: "Glycogène (80%)"
+    },
+    steps: [
+      { name: 'Échauffement 4 nages & crawl souple', duration: '15 min (500m)', zone: 'Z1' },
+      { name: 'Test 400m nage libre chrono maximal', duration: '8 min', zone: 'CSS' },
+      { name: 'Récupération active souple', duration: '10 min', zone: 'Z1' },
+      { name: 'Test 200m nage libre chrono maximal', duration: '5 min', zone: 'CSS' },
+      { name: 'Retour au calme dos / brasse', duration: '12 min', zone: 'Z1' }
+    ],
+    personalizedPace: 'Allure CSS = (Temps 400m - Temps 200m) / 2'
+  }
+};
+
+export function generateTrainingPlan({
+  disciplineKey = 'running',
+  distanceKey = 'marathon',
+  daysPerWeek = 4,
+  targetTime = null,
+  userProfile = {}
+}) {
+  const disciplineInfo = database.disciplines[disciplineKey];
+  const distanceInfo = disciplineInfo?.distances[distanceKey] || { weeks: 12, defaultTSSPerWeek: 350, label: 'Course' };
+  const totalWeeks = distanceInfo.weeks || 12;
+
+  const effectiveTargetTime = targetTime || DEFAULT_TARGET_TIMES[distanceKey] || '03:30:00';
+  const targetPaceData = calculateRequiredPace(distanceKey, effectiveTargetTime);
+
+  const targetSlots = SCHEDULE_TEMPLATES[daysPerWeek] || SCHEDULE_TEMPLATES[4];
+  const library = database.library;
+  const hasPower = Boolean(userProfile.hasPowerMeter);
+
+  const weeks = [];
+
+  for (let w = 1; w <= totalWeeks; w++) {
+    const isBaselineWeek = (w === 1);
+    const isRecoveryWeek = (w % 4 === 0) && w !== totalWeeks && !isBaselineWeek;
+
+    let phase = 'Développement Foncier';
+    let volumeMultiplier = 1.0;
+
+    if (isBaselineWeek) {
+      phase = 'Étalonnage & Tests des Bases Athlétiques';
+      volumeMultiplier = 0.85;
+    } else if (w <= Math.round(totalWeeks * 0.45)) {
+      phase = 'Fondation & Endurance de Base';
+      volumeMultiplier = 0.9 + (w * 0.03);
+    } else if (w <= Math.round(totalWeeks * 0.8)) {
+      phase = `Spécifique Allure Cible (${targetPaceData ? targetPaceData.formattedPace : 'Allure Course'})`;
+      volumeMultiplier = 1.05 + ((w - Math.round(totalWeeks * 0.45)) * 0.02);
+    } else {
+      phase = 'Affûtage & Fraîcheur Pré-Course';
+      volumeMultiplier = 0.75 - ((w - Math.round(totalWeeks * 0.8)) * 0.08);
+    }
+
+    if (isRecoveryWeek) {
+      phase = 'Assimilation & Régénération';
+      volumeMultiplier *= 0.75;
+    }
+
+    const days = DAYS_OF_WEEK.map((dayName, dayIndex) => {
+      const isTrainingDay = targetSlots.includes(dayIndex);
+      if (!isTrainingDay) {
+        return {
+          dayIndex,
+          dayName,
+          isRest: true,
+          workout: null
+        };
+      }
+
+      const workout = pickWorkoutForSlot({
+        disciplineKey,
+        dayIndex,
+        targetSlots,
+        library,
+        phase,
+        volumeMultiplier,
+        userProfile,
+        isBaselineWeek,
+        isRecoveryWeek,
+        hasPower,
+        targetPaceData
+      });
+
+      return {
+        dayIndex,
+        dayName,
+        isRest: false,
+        workout
+      };
+    });
+
+    const activeDays = days.filter(d => !d.isRest && d.workout);
+    const totalDuration = activeDays.reduce((acc, d) => acc + (d.workout.durationMinutes || 0), 0);
+    const estimatedTSS = Math.round(activeDays.reduce((acc, d) => acc + (d.workout.estimatedTSS || 0), 0));
+
+    weeks.push({
+      weekNumber: w,
+      phase,
+      isBaselineWeek,
+      isRecoveryWeek,
+      volumeMultiplier: Number(volumeMultiplier.toFixed(2)),
+      totalDurationMinutes: totalDuration,
+      estimatedTSS,
+      days
+    });
+  }
+
+  return {
+    id: `plan_${disciplineKey}_${distanceKey}_${daysPerWeek}d_${Date.now()}`,
+    disciplineKey,
+    disciplineName: disciplineInfo.name,
+    distanceKey,
+    distanceLabel: distanceInfo.label,
+    daysPerWeek,
+    totalWeeks,
+    targetTime: effectiveTargetTime,
+    targetPaceData,
+    hasPowerMeter: hasPower,
+    createdAt: new Date().toISOString(),
+    weeks
+  };
+}
+
+function pickWorkoutForSlot({
+  disciplineKey,
+  dayIndex,
+  targetSlots,
+  library,
+  phase,
+  volumeMultiplier,
+  userProfile,
+  isBaselineWeek,
+  isRecoveryWeek,
+  hasPower,
+  targetPaceData
+}) {
+  let template;
+
+  if (isBaselineWeek) {
+    if (dayIndex === targetSlots[0]) {
+      if (disciplineKey === 'running' || disciplineKey === 'trail') {
+        template = BASELINE_TEST_WORKOUTS.running;
+      } else if (disciplineKey === 'triathlon') {
+        template = hasPower ? BASELINE_TEST_WORKOUTS.cycling_power : BASELINE_TEST_WORKOUTS.cycling_no_power;
+      }
+    } else if (dayIndex === targetSlots[1] && disciplineKey === 'triathlon') {
+      template = BASELINE_TEST_WORKOUTS.running;
+    } else if (dayIndex === targetSlots[targetSlots.length - 1]) {
+      template = library.running.find(w => w.category === 'endurance');
+    } else {
+      template = library.running.find(w => w.category === 'recovery') || library.running[0];
+    }
+  }
+
+  if (!template) {
+    const isWeekendLongSlot = (dayIndex === 5 || dayIndex === 6);
+
+    if (disciplineKey === 'running') {
+      if (isWeekendLongSlot) {
+        template = library.running.find(w => w.category === 'long') || library.running[0];
+      } else if (dayIndex === targetSlots[0]) {
+        template = isRecoveryWeek 
+          ? library.running.find(w => w.category === 'recovery') 
+          : library.running.find(w => w.category === 'interval');
+      } else if (dayIndex === targetSlots[1] && targetSlots.length >= 4) {
+        template = library.running.find(w => w.category === 'tempo') || library.running[0];
+      } else {
+        template = library.running.find(w => w.category === 'endurance');
+      }
+    } else if (disciplineKey === 'triathlon') {
+      if (dayIndex === 5) {
+        template = library.cycling.find(w => w.category === 'long') || library.cycling[0];
+      } else if (dayIndex === 6) {
+        template = (phase.includes('Spécifique') && library.brick?.length)
+          ? library.brick[0]
+          : library.running.find(w => w.category === 'long') || library.running[0];
+      } else if (dayIndex === targetSlots[0]) {
+        template = library.swimming.find(w => w.category === 'interval') || library.swimming[0];
+      } else {
+        template = library.cycling.find(w => w.category === 'interval') || library.cycling[0];
+      }
+    } else if (disciplineKey === 'trail') {
+      if (isWeekendLongSlot) {
+        template = library.trail.find(w => w.category === 'long') || library.trail[0];
+      } else if (dayIndex === targetSlots[0]) {
+        template = library.trail.find(w => w.category === 'interval') || library.trail[0];
+      } else {
+        template = library.trail.find(w => w.category === 'technique') || library.running[0];
+      }
+    }
+  }
+
+  if (!template) {
+    template = library.running[0];
+  }
+
+  const adjustedDuration = Math.round((template.baseDurationMinutes * volumeMultiplier) / 5) * 5;
+  const estimatedTSS = Math.round(adjustedDuration * getIntensityFactor(template.category));
+
+  const personalizedPace = computeCoachGuidance({
+    workout: template,
+    profile: userProfile,
+    targetPaceData,
+    hasPower
+  });
+
+  return {
+    ...template,
+    instanceId: `${template.id}_${Math.random().toString(36).substring(2, 7)}`,
+    durationMinutes: adjustedDuration,
+    estimatedTSS,
+    personalizedPace,
+    garminImpact: template.garminImpact || null
+  };
+}
+
+function getIntensityFactor(category) {
+  switch (category) {
+    case 'test': return 1.4;
+    case 'recovery': return 0.65;
+    case 'endurance': return 0.85;
+    case 'technique': return 0.80;
+    case 'tempo': return 1.10;
+    case 'interval': return 1.30;
+    case 'brick': return 1.05;
+    case 'long': return 0.95;
+    default: return 0.9;
+  }
+}
+
+function computeCoachGuidance({ workout, profile, targetPaceData, hasPower }) {
+  if (workout.category === 'test') {
+    return workout.personalizedPace;
+  }
+
+  if (workout.sport === 'running') {
+    if (workout.category === 'tempo' && targetPaceData) {
+      return `Allure Objectif : ${targetPaceData.formattedPace} (${targetPaceData.speedKmh} km/h pour viser ${profile.targetTime || 'votre chrono'})`;
+    }
+
+    if (profile.vma) {
+      const vma = parseFloat(profile.vma);
+      if (workout.category === 'interval') {
+        const paceMinKm = (60 / (vma * 1.0)).toFixed(2);
+        return `VMA 100%: ~${formatPace(paceMinKm)} /km (VMA: ${vma} km/h)`;
+      }
+      if (workout.category === 'endurance') {
+        const paceMinKm = (60 / (vma * 0.68)).toFixed(2);
+        return `Aérobie Z2: ~${formatPace(paceMinKm)} /km (65-70% VMA)`;
+      }
+    }
+  }
+
+  if (workout.sport === 'cycling') {
+    if (hasPower && profile.ftp) {
+      const ftp = parseInt(profile.ftp, 10);
+      if (workout.category === 'interval') {
+        return `Sweet Spot : ${Math.round(ftp * 0.88)}W - ${Math.round(ftp * 0.93)}W (FTP: ${ftp}W)`;
+      }
+      return `Z2 Aérobie : ${Math.round(ftp * 0.60)}W - ${Math.round(ftp * 0.72)}W`;
+    } else {
+      if (workout.category === 'interval') {
+        return `Guidage sans capteur : RPE 7-8/10 (Essoufflement marqué, cadence 90 rpm, FC Seuil)`;
+      }
+      return `Guidage sans capteur : RPE 4-5/10 (Aisance totale, parole facile, cadence 90-95 rpm)`;
+    }
+  }
+
+  if (profile.fcMax) {
+    const fcm = parseInt(profile.fcMax, 10);
+    if (workout.category === 'endurance') {
+      return `Plafond Z2 : < ${Math.round(fcm * 0.75)} bpm (FC Max: ${fcm})`;
+    }
+  }
+
+  return null;
+}
+
+function formatPace(decimalPace) {
+  const min = Math.floor(decimalPace);
+  const sec = Math.round((decimalPace - min) * 60);
+  return `${min}'${sec < 10 ? '0' : ''}${sec}"`;
+}

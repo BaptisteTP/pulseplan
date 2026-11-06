@@ -1,0 +1,16 @@
+{
+  "name": "pulseplan-backend",
+  "version": "1.0.0",
+  "description": "PulsePlan Backend API - Express + OAuth sync for Garmin, Coros, Wahoo",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0"
+  }
+}
