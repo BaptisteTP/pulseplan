@@ -13,7 +13,7 @@ import { checkBackendHealth } from './services/api';
 import { Menu, X, Calendar as CalendarIcon, LayoutGrid, Sliders, Wifi, User } from 'lucide-react';
 
 export default function App() {
-  const { profile, isAuthenticated } = useProfile();
+  const { profile, isAuthenticated, cloudPlan, saveUserPlan } = useProfile();
   const [activeTab, setActiveTab] = useState('calendar');
   const [backendStatus, setBackendStatus] = useState('checking');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -39,28 +39,37 @@ export default function App() {
       disciplineKey: profile.currentDiscipline || 'running',
       distanceKey: profile.currentDistance || 'marathon',
       daysPerWeek: profile.daysPerWeek || 4,
-      targetTime: profile.targetTime || '03:30:00',
+      targetTime: profile.targetTime || '',
+      raceDate: profile.raceDate || '',
       userProfile: profile
     });
   });
 
+  // Sync cloud plan if loaded from backend
+  useEffect(() => {
+    if (cloudPlan) {
+      setCurrentPlan(cloudPlan);
+    }
+  }, [cloudPlan]);
+
   const handlePlanGenerated = (newPlan) => {
     setCurrentPlan(newPlan);
+    saveUserPlan(newPlan);
     setActiveTab('calendar');
   };
 
   const handlePlanUpdated = (updatedPlan) => {
     setCurrentPlan(updatedPlan);
+    saveUserPlan(updatedPlan);
   };
 
-  // If user is not authenticated, render login/register screen
   if (!isAuthenticated) {
     return <AuthScreen />;
   }
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex font-sans antialiased">
-      {/* Desktop Left Sidebar (hidden on mobile) */}
+      {/* Desktop Left Sidebar */}
       <div className="hidden md:flex">
         <Sidebar 
           activeTab={activeTab} 
@@ -97,7 +106,7 @@ export default function App() {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-y-auto max-h-screen pb-16 md:pb-0">
-        {/* Top Header Bar with Mobile Menu Toggle */}
+        {/* Top Header Bar */}
         <header className="h-14 bg-white border-b border-slate-200 px-4 sm:px-6 flex items-center justify-between shrink-0 sticky top-0 z-20">
           <div className="flex items-center gap-3">
             <button
@@ -123,12 +132,12 @@ export default function App() {
 
           <div className="flex items-center gap-2">
             <span className="text-xs text-slate-600 font-mono hidden sm:inline">
-              Athlète : <strong className="text-slate-900">{profile.name}</strong>
+              Athlète : <strong className="text-slate-900">{profile.name || profile.email}</strong>
             </span>
           </div>
         </header>
 
-        {/* Tab view views */}
+        {/* Tab views */}
         <main className="flex-1 p-3 sm:p-6 max-w-7xl w-full mx-auto">
           {activeTab === 'calendar' && (
             <MonthCalendar 
@@ -169,7 +178,7 @@ export default function App() {
         </main>
       </div>
 
-      {/* iOS Native Bottom Bar (Mobile Bottom Navigation) */}
+      {/* iOS Native Bottom Bar */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex items-center justify-around py-2 px-1 z-30 shadow-lg">
         <button
           onClick={() => setActiveTab('calendar')}

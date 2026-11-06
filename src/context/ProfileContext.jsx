@@ -1,5 +1,11 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { saveAthleteProfile, fetchAthleteProfile } from '../services/api';
+import { 
+  saveAthleteProfile, 
+  fetchAthleteProfile, 
+  loginUserApi,
+  savePlanToBackend,
+  fetchPlanFromBackend
+} from '../services/api';
 
 const ProfileContext = createContext(null);
 
@@ -8,14 +14,15 @@ const DEFAULT_PROFILE = {
   email: '',
   level: 'Intermédiaire',
   hasPowerMeter: false,
-  vma: '',          // empty by default with placeholder
-  ftp: '',          // empty by default with placeholder
-  fcMax: '',        // empty by default with placeholder
+  vma: '',
+  ftp: '',
+  fcMax: '',
   fcRepos: '',
   weeklyHoursLimit: '10',
   currentDiscipline: 'running',
   currentDistance: 'marathon',
-  targetTime: '',   // empty by default with placeholder
+  targetTime: '',
+  raceDate: '',
   daysPerWeek: 4
 };
 
@@ -23,15 +30,6 @@ const STORAGE_KEY = 'pulseplan_athlete_profile';
 const AUTH_KEY = 'pulseplan_auth_token';
 
 export function ProfileProvider({ children }) {
-  const [profile, setProfile] = useState(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      return saved ? JSON.parse(saved) : DEFAULT_PROFILE;
-    } catch (e) {
-      return DEFAULT_PROFILE;
-    }
-  });
-
   const [user, setUser] = useState(() => {
     try {
       const savedUser = localStorage.getItem(AUTH_KEY);
@@ -41,36 +39,96 @@ export function ProfileProvider({ children }) {
     }
   });
 
-  useEffect(() => {
+  const [profile, setProfile] = useState(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
-      saveAthleteProfile(profile);
-    } catch (e) {
-      console.error(e);
+      const saved = localStorage.getItem(STORAGE_KEY);
+      return saved ? JSON.parse(saved) : DEFAULT_PROFILE;
+    } catch {
+      return DEFAULT_PROFILE;
     }
-  }, [profile]);
+  });
 
+  const [cloudPlan, setCloudPlan] = useState(null);
+
+  // Sync profile from backend when user logs in or switches browser
+  useEffect(() => {
+    if (user && user.email) {
+      let isMounted = true;
+      fetchAthleteProfile(user.email).then(remoteProfile => {
+        if (isMounted && remoteProfile) {
+          setProfile(prev => ({ ...prev, ...remoteProfile }));
+          localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...profile, ...remoteProfile }));
+        }
+      });
+      fetchPlanFromBackend(user.email).then(remotePlan => {
+        if (isMounted && remotePlan) {
+          setCloudPlan(remotePlan);
+        }
+      });
+      return () => { isMounted = false; };
+    }
+  }, [user?.email]);
+
+  // Persist profile locally and to cloud
   const updateProfile = (fields) => {
-    setProfile(prev => ({ ...prev, ...fields }));
+    setProfile(prev => {
+      const updated = { ...prev, ...fields };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      if (user?.email) {
+        saveAthleteProfile(updated, user.email);
+      }
+      return updated;
+    });
   };
 
-  const login = (email, password, athleteName) => {
+  const login = async (email, password, athleteName) => {
     const finalName = athleteName || (profile.name ? profile.name : email.split('@')[0]);
-    const authenticatedUser = {
-      id: 'usr_' + Date.now(),
-      email,
-      name: finalName,
-      token: 'jwt_mock_' + Math.random().toString(36).substring(2)
-    };
+    
+    // Call backend API login endpoint
+    const backendRes = await loginUserApi(email, password, finalName);
+    
+    let authenticatedUser;
+    let initialProfile = { ...DEFAULT_PROFILE, email, name: finalName };
+
+    if (backendRes && backendRes.success) {
+      authenticatedUser = backendRes.user;
+      if (backendRes.profile) {
+        initialProfile = { ...initialProfile, ...backendRes.profile };
+      }
+      if (backendRes.currentPlan) {
+        setCloudPlan(backendRes.currentPlan);
+      }
+    } else {
+      // Offline fallback
+      authenticatedUser = {
+        id: 'usr_' + Date.now(),
+        email,
+        name: finalName,
+        token: 'jwt_mock_' + Math.random().toString(36).substring(2)
+      };
+    }
+
     setUser(authenticatedUser);
     localStorage.setItem(AUTH_KEY, JSON.stringify(authenticatedUser));
-    updateProfile({ email, name: finalName });
+    setProfile(initialProfile);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(initialProfile));
+    
     return { success: true };
   };
 
   const logout = () => {
     setUser(null);
+    setProfile(DEFAULT_PROFILE);
+    setCloudPlan(null);
     localStorage.removeItem(AUTH_KEY);
+    localStorage.removeItem(STORAGE_KEY);
+  };
+
+  const saveUserPlan = (plan) => {
+    setCloudPlan(plan);
+    if (user?.email) {
+      savePlanToBackend(user.email, plan);
+    }
   };
 
   return (
@@ -80,7 +138,9 @@ export function ProfileProvider({ children }) {
       user,
       isAuthenticated: Boolean(user),
       login,
-      logout
+      logout,
+      cloudPlan,
+      saveUserPlan
     }}>
       {children}
     </ProfileContext.Provider>
