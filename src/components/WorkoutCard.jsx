@@ -12,18 +12,29 @@ import {
   Mountain,
   Compass,
   Activity,
-  Flame
+  ArrowRightLeft
 } from 'lucide-react';
 
-export default function WorkoutCard({ dayName, workout, weekNumber }) {
+export default function WorkoutCard({ 
+  dayName, 
+  workout, 
+  weekNumber, 
+  onMoveWorkout, 
+  allDays = [], 
+  currentDayIndex = 0 
+}) {
   const [showSteps, setShowSteps] = useState(false);
+  const [showMoveMenu, setShowMoveMenu] = useState(false);
   const [downloaded, setDownloaded] = useState(false);
 
   if (!workout) {
     return (
-      <div className="min-h-[235px] bg-slate-50 border border-dashed border-slate-200 rounded-lg p-3 flex flex-col justify-between text-xs">
-        <div className="font-mono text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
-          {dayName}
+      <div className="min-h-[235px] bg-slate-50 border border-dashed border-slate-200 rounded-xl p-3 flex flex-col justify-between text-xs hover:border-slate-300 transition-colors">
+        <div className="flex items-center justify-between">
+          <span className="font-mono text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+            {dayName}
+          </span>
+          <span className="text-[10px] font-mono text-slate-400">Libre</span>
         </div>
         <div className="text-center text-slate-400 py-6">
           Repos complet
@@ -92,7 +103,7 @@ export default function WorkoutCard({ dayName, workout, weekNumber }) {
   };
 
   return (
-    <div className={`min-h-[235px] bg-white border transition-all rounded-lg p-3 flex flex-col justify-between text-xs shadow-xs hover:shadow-sm ${
+    <div className={`min-h-[235px] bg-white border transition-all rounded-xl p-3 flex flex-col justify-between text-xs shadow-xs hover:shadow-sm relative ${
       isTest ? 'border-purple-300 ring-1 ring-purple-100 bg-purple-50/10' : 'border-slate-200 hover:border-slate-300'
     }`}>
       <div>
@@ -101,10 +112,54 @@ export default function WorkoutCard({ dayName, workout, weekNumber }) {
           <span className="font-mono text-[11px] font-semibold text-slate-600 uppercase tracking-wide">
             {dayName}
           </span>
-          <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium border ${sportInfo.badge}`}>
-            <SportIcon className="w-3 h-3" />
-            {sportInfo.label}
-          </span>
+
+          <div className="flex items-center gap-1.5">
+            <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium border ${sportInfo.badge}`}>
+              <SportIcon className="w-3 h-3" />
+              {sportInfo.label}
+            </span>
+
+            {/* Quick Move Button for Mobile & Desktop */}
+            {onMoveWorkout && (
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setShowMoveMenu(!showMoveMenu)}
+                  title="Déplacer vers un autre jour"
+                  className="p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer"
+                >
+                  <ArrowRightLeft className="w-3 h-3" />
+                </button>
+
+                {showMoveMenu && (
+                  <div className="absolute right-0 top-6 z-30 w-36 bg-white border border-slate-200 rounded-lg shadow-lg p-1.5 text-xs animate-in fade-in">
+                    <div className="text-[10px] font-mono uppercase text-slate-400 font-semibold px-2 py-1">
+                      Déplacer vers :
+                    </div>
+                    {allDays.map((d) => {
+                      if (d.dayIndex === currentDayIndex) return null;
+                      return (
+                        <button
+                          key={d.dayIndex}
+                          type="button"
+                          onClick={() => {
+                            onMoveWorkout(d.dayIndex);
+                            setShowMoveMenu(false);
+                          }}
+                          className="w-full text-left px-2 py-1 rounded text-[11px] text-slate-700 hover:bg-slate-100 flex items-center justify-between cursor-pointer"
+                        >
+                          <span>{d.dayName}</span>
+                          <span className="text-[9px] font-mono text-slate-400">
+                            {d.isRest ? 'Repos' : d.workout?.title.substring(0, 6) + '...'}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Workout title */}
@@ -125,7 +180,7 @@ export default function WorkoutCard({ dayName, workout, weekNumber }) {
           </span>
         </div>
 
-        {/* Garmin Physiological Impact Badge (Firstbeat Analytics) */}
+        {/* Garmin Physiological Impact Badge */}
         {garmin && (
           <div className="mt-2 p-1.5 bg-slate-50 border border-slate-200 rounded text-[10px] space-y-1">
             <div className="flex items-center justify-between">
@@ -134,13 +189,7 @@ export default function WorkoutCard({ dayName, workout, weekNumber }) {
                 {garmin.primaryBenefit}
               </span>
               <span className="font-mono text-slate-600">
-                TE {garmin.aerobicTE} Aéro / {garmin.anaerobicTE} Anaé
-              </span>
-            </div>
-            <div className="flex items-center justify-between text-[9px] text-slate-500 font-mono">
-              <span>EPOC : {garmin.epocRange}</span>
-              <span className="truncate max-w-[110px]" title={garmin.dominantFuel}>
-                {garmin.dominantFuel.split(' ')[0]}
+                TE {garmin.aerobicTE} / {garmin.anaerobicTE}
               </span>
             </div>
           </div>

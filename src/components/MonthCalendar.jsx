@@ -12,7 +12,8 @@ import {
   Waves,
   Mountain,
   Activity,
-  Compass
+  Compass,
+  ArrowRightLeft
 } from 'lucide-react';
 import { exportWorkoutToFitJson } from '../services/exportService';
 
@@ -24,7 +25,7 @@ const MONTH_NAMES = [
 const WEEKDAY_NAMES_SHORT = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 const WEEKDAY_NAMES_LONG = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 
-export default function MonthCalendar({ plan, userProfile }) {
+export default function MonthCalendar({ plan, userProfile, onPlanUpdated }) {
   const startDate = new Date();
   const dayOffset = (1 + 7 - startDate.getDay()) % 7;
   const planStart = new Date(startDate);
@@ -43,6 +44,7 @@ export default function MonthCalendar({ plan, userProfile }) {
         workoutDateMap[dateKey] = {
           date: sessionDate,
           weekNumber: week.weekNumber,
+          weekIndex: week.weekNumber - 1,
           phase: week.phase,
           isRecoveryWeek: week.isRecoveryWeek,
           dayItem
@@ -53,6 +55,7 @@ export default function MonthCalendar({ plan, userProfile }) {
 
   const [currentMonthDate, setCurrentMonthDate] = useState(new Date(planStart));
   const [selectedSessionModal, setSelectedSessionModal] = useState(null);
+  const [showMovePicker, setShowMovePicker] = useState(false);
 
   const year = currentMonthDate.getFullYear();
   const month = currentMonthDate.getMonth();
@@ -170,9 +173,37 @@ export default function MonthCalendar({ plan, userProfile }) {
     }
   });
 
+  // Move workout within the week from the calendar modal
+  const handleMoveSessionToDay = (targetDayIndex) => {
+    if (!selectedSessionModal || !onPlanUpdated) return;
+
+    const updatedPlan = JSON.parse(JSON.stringify(plan));
+    const week = updatedPlan.weeks[selectedSessionModal.weekIndex];
+    if (!week) return;
+
+    const sourceDay = week.days[selectedSessionModal.dayItem.dayIndex];
+    const targetDay = week.days[targetDayIndex];
+
+    const tempWorkout = sourceDay.workout;
+    const tempIsRest = sourceDay.isRest;
+
+    sourceDay.workout = targetDay.workout;
+    sourceDay.isRest = targetDay.isRest;
+
+    targetDay.workout = tempWorkout;
+    targetDay.isRest = tempIsRest;
+
+    week.totalDurationMinutes = week.days.reduce((acc, d) => acc + (d.workout?.durationMinutes || 0), 0);
+    week.estimatedTSS = week.days.reduce((acc, d) => acc + (d.workout?.estimatedTSS || 0), 0);
+
+    onPlanUpdated(updatedPlan);
+    setShowMovePicker(false);
+    setSelectedSessionModal(null);
+  };
+
   return (
     <div className="space-y-3 sm:space-y-4">
-      {/* Month Header & Controls - Mobile Touch Optimized */}
+      {/* Month Header & Controls */}
       <div className="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center justify-between sm:justify-start gap-2">
           <div className="flex items-center rounded-lg border border-slate-200 shadow-2xs overflow-hidden">
@@ -221,7 +252,6 @@ export default function MonthCalendar({ plan, userProfile }) {
 
       {/* Calendar Grid Container */}
       <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
-        {/* Days of week header */}
         <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-50 text-center py-2 text-[11px] sm:text-xs font-mono font-semibold text-slate-600">
           {WEEKDAY_NAMES_LONG.map((name, i) => (
             <div key={name} className={i >= 5 ? 'text-slate-900 font-bold' : ''}>
@@ -231,7 +261,6 @@ export default function MonthCalendar({ plan, userProfile }) {
           ))}
         </div>
 
-        {/* Responsive Month Days Cells */}
         <div className="grid grid-cols-7 auto-rows-fr divide-x divide-y divide-slate-100">
           {calendarCells.map((cell) => {
             const planEntry = workoutDateMap[cell.dateKey];
@@ -272,7 +301,10 @@ export default function MonthCalendar({ plan, userProfile }) {
                       const garmin = workout.garminImpact;
                       return (
                         <button
-                          onClick={() => setSelectedSessionModal({ ...planEntry, workout })}
+                          onClick={() => {
+                            setSelectedSessionModal({ ...planEntry, workout });
+                            setShowMovePicker(false);
+                          }}
                           className={`w-full text-left p-1 sm:p-1.5 rounded border transition-all text-xs cursor-pointer active:scale-95 ${sportBadge.chip}`}
                         >
                           <div className="flex items-center gap-1 font-semibold text-[10px] sm:text-[11px] leading-tight line-clamp-1">
@@ -305,7 +337,7 @@ export default function MonthCalendar({ plan, userProfile }) {
         </div>
       </div>
 
-      {/* Session Details Modal */}
+      {/* Session Details Modal with Move Option */}
       {selectedSessionModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
           <div className="bg-white border border-slate-200 rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-xl relative animate-in fade-in zoom-in-95 duration-100 max-h-[85vh] overflow-y-auto">
@@ -316,15 +348,60 @@ export default function MonthCalendar({ plan, userProfile }) {
               <X className="w-5 h-5" />
             </button>
 
-            <div className="flex items-center gap-2 text-xs font-mono text-slate-500 uppercase tracking-wide">
-              <span>Semaine {selectedSessionModal.weekNumber}</span>
-              <span>·</span>
-              <span>{selectedSessionModal.date.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
+            <div className="flex items-center justify-between pr-8">
+              <div className="flex items-center gap-2 text-xs font-mono text-slate-500 uppercase tracking-wide">
+                <span>Semaine {selectedSessionModal.weekNumber}</span>
+                <span>·</span>
+                <span>{selectedSessionModal.date.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
+              </div>
             </div>
 
             <h3 className="text-base sm:text-lg font-bold text-slate-900 mt-1 pr-6">
               {selectedSessionModal.workout.title}
             </h3>
+
+            {/* Quick Move Trigger inside Modal */}
+            <div className="mt-3 p-2.5 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-between">
+              <span className="text-xs text-slate-600 flex items-center gap-1.5 font-medium">
+                <ArrowRightLeft className="w-3.5 h-3.5 text-slate-500" />
+                <span>Déplacer cette séance dans la semaine</span>
+              </span>
+
+              <button
+                type="button"
+                onClick={() => setShowMovePicker(!showMovePicker)}
+                className="px-2.5 py-1 bg-white hover:bg-slate-100 border border-slate-200 rounded text-xs font-semibold text-slate-800 transition-colors cursor-pointer"
+              >
+                {showMovePicker ? 'Fermer' : 'Choisir un jour'}
+              </button>
+            </div>
+
+            {/* Day Picker */}
+            {showMovePicker && plan.weeks[selectedSessionModal.weekIndex] && (
+              <div className="mt-2 p-2 bg-slate-100/70 border border-slate-200 rounded-lg grid grid-cols-2 sm:grid-cols-4 gap-1.5 animate-in fade-in">
+                {plan.weeks[selectedSessionModal.weekIndex].days.map((d) => {
+                  const isCurrentDay = d.dayIndex === selectedSessionModal.dayItem.dayIndex;
+                  return (
+                    <button
+                      key={d.dayIndex}
+                      type="button"
+                      disabled={isCurrentDay}
+                      onClick={() => handleMoveSessionToDay(d.dayIndex)}
+                      className={`p-2 rounded border text-left text-xs transition-colors cursor-pointer ${
+                        isCurrentDay
+                          ? 'opacity-40 bg-slate-200 border-slate-300 text-slate-500 cursor-not-allowed'
+                          : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-800 font-medium active:bg-slate-100'
+                      }`}
+                    >
+                      <div className="font-bold">{d.dayName}</div>
+                      <div className="text-[10px] text-slate-400 font-mono">
+                        {d.isRest ? 'Repos' : d.workout?.title.substring(0, 8) + '...'}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
 
             {/* Metrics ribbon */}
             <div className="mt-3 flex items-center gap-3 py-2 px-3 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono">
@@ -343,7 +420,7 @@ export default function MonthCalendar({ plan, userProfile }) {
               </span>
             </div>
 
-            {/* Garmin Physiological Impact Box */}
+            {/* Garmin Impact Box */}
             {selectedSessionModal.workout.garminImpact && (
               <div className="mt-3 p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-2">
                 <div className="flex items-center justify-between text-xs border-b border-slate-200/80 pb-2">

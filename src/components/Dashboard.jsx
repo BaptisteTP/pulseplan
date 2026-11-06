@@ -13,12 +13,11 @@ import {
   Download, 
   BarChart3,
   Compass,
-  Gauge,
   ClipboardCheck,
   CheckCircle2,
   AlertTriangle,
   Sparkles,
-  Layers
+  ArrowRightLeft
 } from 'lucide-react';
 
 export default function Dashboard({ plan, userProfile, onPlanUpdated, onOpenExports }) {
@@ -32,14 +31,71 @@ export default function Dashboard({ plan, userProfile, onPlanUpdated, onOpenExpo
 
   const [currentWeekIndex, setCurrentWeekIndex] = useState(0);
   const [showReviewModal, setShowReviewModal] = useState(false);
+  const [draggedDayIndex, setDraggedDayIndex] = useState(null);
+  const [moveNotice, setMoveNotice] = useState(null);
+
   const currentWeek = plan.weeks[currentWeekIndex] || plan.weeks[0];
 
   const totalHours = Math.round(plan.weeks.reduce((acc, w) => acc + w.totalDurationMinutes, 0) / 60);
   const totalTSS = plan.weeks.reduce((acc, w) => acc + w.estimatedTSS, 0);
 
+  // Drag and Drop handlers within the current week
+  const handleDragStart = (e, dayIndex) => {
+    setDraggedDayIndex(dayIndex);
+    e.dataTransfer.setData('text/plain', dayIndex);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = (e, targetDayIndex) => {
+    e.preventDefault();
+    const sourceIndex = draggedDayIndex !== null ? draggedDayIndex : Number(e.dataTransfer.getData('text/plain'));
+    
+    if (sourceIndex === targetDayIndex || isNaN(sourceIndex)) {
+      setDraggedDayIndex(null);
+      return;
+    }
+
+    swapOrMoveDays(sourceIndex, targetDayIndex);
+    setDraggedDayIndex(null);
+  };
+
+  const swapOrMoveDays = (sourceDayIndex, targetDayIndex) => {
+    const updatedPlan = JSON.parse(JSON.stringify(plan));
+    const weekToUpdate = updatedPlan.weeks[currentWeekIndex];
+
+    const sourceDay = weekToUpdate.days[sourceDayIndex];
+    const targetDay = weekToUpdate.days[targetDayIndex];
+
+    // Swap workouts and rest status between days
+    const tempWorkout = sourceDay.workout;
+    const tempIsRest = sourceDay.isRest;
+
+    sourceDay.workout = targetDay.workout;
+    sourceDay.isRest = targetDay.isRest;
+
+    targetDay.workout = tempWorkout;
+    targetDay.isRest = tempIsRest;
+
+    // Recalculate week totals
+    weekToUpdate.totalDurationMinutes = weekToUpdate.days.reduce((acc, d) => acc + (d.workout?.durationMinutes || 0), 0);
+    weekToUpdate.estimatedTSS = weekToUpdate.days.reduce((acc, d) => acc + (d.workout?.estimatedTSS || 0), 0);
+
+    onPlanUpdated(updatedPlan);
+
+    const sourceName = sourceDay.dayName;
+    const targetName = targetDay.dayName;
+    setMoveNotice(`Séance déplacée de ${sourceName} vers ${targetName}`);
+    setTimeout(() => setMoveNotice(null), 3000);
+  };
+
   return (
     <div className="space-y-3 sm:space-y-4">
-      {/* Top Summary Card - Mobile optimized */}
+      {/* Top Summary Card */}
       <div className="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
@@ -70,14 +126,13 @@ export default function Dashboard({ plan, userProfile, onPlanUpdated, onOpenExpo
                 <>
                   <span className="text-slate-300">·</span>
                   <span className="font-mono text-slate-700 font-medium">
-                    {plan.targetPaceData.formattedPace} ({plan.targetPaceData.speedKmh} km/h)
+                    Allure : {plan.targetPaceData.formattedPace} ({plan.targetPaceData.speedKmh} km/h)
                   </span>
                 </>
               )}
             </div>
           </div>
 
-          {/* Aggregate KPI counters */}
           <div className="flex items-center justify-between sm:justify-end gap-4 border-t sm:border-t-0 border-slate-100 pt-2.5 sm:pt-0">
             <div>
               <div className="text-[10px] font-mono text-slate-400 uppercase">Volume</div>
@@ -107,10 +162,9 @@ export default function Dashboard({ plan, userProfile, onPlanUpdated, onOpenExpo
         )}
       </div>
 
-      {/* Week Navigation Controls - Large touch targets */}
+      {/* Week Navigation Controls */}
       <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-xs space-y-2.5 sm:space-y-0 sm:flex sm:items-center sm:justify-between">
         <div className="flex items-center justify-between sm:justify-start gap-2">
-          {/* Touch-friendly previous / next buttons */}
           <div className="inline-flex rounded-lg shadow-2xs border border-slate-200 overflow-hidden">
             <button
               onClick={() => currentWeekIndex > 0 && setCurrentWeekIndex(currentWeekIndex - 1)}
@@ -140,12 +194,12 @@ export default function Dashboard({ plan, userProfile, onPlanUpdated, onOpenExpo
           </div>
         </div>
 
-        {/* Action button */}
+        {/* Action buttons */}
         <div className="flex items-center gap-2">
           {currentWeekIndex < plan.weeks.length - 1 && (
             <button
               onClick={() => setShowReviewModal(true)}
-              className="flex-1 sm:flex-none justify-center py-2 px-3 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs active:scale-98"
+              className="flex-1 sm:flex-none justify-center py-2 px-3 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
             >
               <ClipboardCheck className="w-3.5 h-3.5" />
               <span>Bilan S{currentWeek.weekNumber}</span>
@@ -155,7 +209,7 @@ export default function Dashboard({ plan, userProfile, onPlanUpdated, onOpenExpo
           <button
             onClick={() => exportWeekToICal(currentWeek, plan)}
             className="p-2 sm:px-2.5 sm:py-1.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-lg text-xs font-mono flex items-center gap-1"
-            title="Exporter vers agenda iPhone"
+            title="Exporter vers agenda"
           >
             <Calendar className="w-3.5 h-3.5 text-slate-500" />
             <span className="hidden sm:inline">.ics</span>
@@ -163,43 +217,47 @@ export default function Dashboard({ plan, userProfile, onPlanUpdated, onOpenExpo
         </div>
       </div>
 
-      {/* Adaptive Notice Banner if Week was Adapted */}
-      {currentWeek.adaptation && (
-        <div className={`p-3 rounded-lg border text-xs flex items-start gap-2.5 ${
-          currentWeek.adaptation.severity === 'warning'
-            ? 'bg-amber-50 border-amber-200 text-amber-900'
-            : currentWeek.adaptation.severity === 'success'
-            ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
-            : 'bg-slate-50 border-slate-200 text-slate-800'
-        }`}>
-          {currentWeek.adaptation.severity === 'warning' ? (
-            <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-          ) : currentWeek.adaptation.severity === 'success' ? (
-            <Sparkles className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-          ) : (
-            <CheckCircle2 className="w-4 h-4 text-slate-600 shrink-0 mt-0.5" />
-          )}
-          <div>
-            <div className="font-bold">
-              {currentWeek.adaptation.decision}
-            </div>
-            <div className="text-[11px] mt-0.5 opacity-90 leading-relaxed">
-              {currentWeek.adaptation.detail}
-            </div>
-          </div>
+      {/* Move notification toast */}
+      {moveNotice && (
+        <div className="p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium flex items-center gap-2 animate-in fade-in">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+          <span>{moveNotice}</span>
         </div>
       )}
 
-      {/* 7 Days Workout Cards - Grid on desktop, vertical clear list on mobile */}
+      {/* Hint for moving sessions */}
+      <div className="px-1 text-[11px] text-slate-400 font-mono flex items-center gap-1.5">
+        <ArrowRightLeft className="w-3.5 h-3.5 text-slate-400" />
+        <span>Glissez-déposez une carte de séance sur un autre jour pour la déplacer ou utilisez le menu de déplacement.</span>
+      </div>
+
+      {/* 7 Days Workout Cards - Drag & Drop enabled */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-2.5 sm:gap-3">
-        {currentWeek.days.map((dayItem) => (
-          <WorkoutCard
-            key={dayItem.dayIndex}
-            dayName={dayItem.dayName}
-            workout={dayItem.workout}
-            weekNumber={currentWeek.weekNumber}
-          />
-        ))}
+        {currentWeek.days.map((dayItem) => {
+          const isDraggingThis = draggedDayIndex === dayItem.dayIndex;
+
+          return (
+            <div
+              key={dayItem.dayIndex}
+              draggable={!dayItem.isRest && Boolean(dayItem.workout)}
+              onDragStart={(e) => handleDragStart(e, dayItem.dayIndex)}
+              onDragOver={handleDragOver}
+              onDrop={(e) => handleDrop(e, dayItem.dayIndex)}
+              className={`transition-all rounded-xl ${
+                isDraggingThis ? 'opacity-40 scale-98' : ''
+              }`}
+            >
+              <WorkoutCard
+                dayName={dayItem.dayName}
+                workout={dayItem.workout}
+                weekNumber={currentWeek.weekNumber}
+                onMoveWorkout={(targetDayIndex) => swapOrMoveDays(dayItem.dayIndex, targetDayIndex)}
+                allDays={currentWeek.days}
+                currentDayIndex={dayItem.dayIndex}
+              />
+            </div>
+          );
+        })}
       </div>
 
       {/* Macro Progression Timeline */}
